@@ -39,3 +39,6 @@
 
 # debug information files
 *.dwo
+
+# any agentic context
+GEMINI.md
