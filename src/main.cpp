@@ -8,6 +8,20 @@ using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 using Duration = std::chrono::duration<double>;
 
+class Game {
+    public:
+    double linesPerSecond;
+    double lines;
+    double buffs;
+
+    Game(double lps, double b) : linesPerSecond(lps) , buffs(b), lines(0) {}
+    
+    void runCycle(double deltat) {
+        this->lines += this->linesPerSecond * deltat * this->buffs;
+        return;
+    }
+};
+
 // Is the game loop running?
 std::atomic<bool> keep_running{true};
 
@@ -28,12 +42,17 @@ int main() {
     nodelay(stdscr, TRUE);  // Don't wait for user input
 
     TimePoint lasttime = Clock::now();
+    Game game(7, 1.15);
     while (keep_running) {
         TimePoint curtime = Clock::now();
         Duration delta_time = curtime - lasttime;
         lasttime = curtime;
-        
-        mvprintw(10, 10, "Last time: %lf", delta_time.count());
+
+        game.runCycle(delta_time.count());
+        mvprintw(10, 10, "DeltaT: %lf", delta_time.count());
+        mvprintw(12, 10, "Lines: %d", static_cast<int>(game.lines));
+        mvprintw(14, 10, "Lines per second: %lf", game.linesPerSecond);
+        mvprintw(16, 10, "Buff percentage: %lf", game.buffs);
         refresh();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Small sleep to prevent 100% CPU usage
