@@ -32,8 +32,11 @@ int main() {
         TimePoint curtime = Clock::now();
         Duration delta_time = curtime - lasttime;
         lasttime = curtime;
+        
+        mvprintw(10, 10, "Last time: %lf", delta_time.count());
+        refresh();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Small sleep to prevent 100% CPU usage
+        std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Small sleep to prevent 100% CPU usage
     }
 
     // Deinitialize ncurses
