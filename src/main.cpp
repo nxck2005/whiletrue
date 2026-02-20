@@ -4,6 +4,10 @@
 #include <thread>
 #include <ncurses.h> // For ncurses UI
 
+using Clock = std::chrono::high_resolution_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+using Duration = std::chrono::duration<double>;
+
 // Is the game loop running?
 std::atomic<bool> keep_running{true};
 
@@ -17,24 +21,18 @@ int main() {
     std::signal(SIGINT, handle_sigint);
 
     // Initialize ncurses
-    // TODO: Add proper ncurses initialization and error handling
     initscr();              // Start curses mode
     cbreak();               // Line buffering disabled, Pass on everything to me
     noecho();               // Don't echo() while we getch
     curs_set(0);            // Hide the cursor
     nodelay(stdscr, TRUE);  // Don't wait for user input
 
-    // Game loop
-    auto last_frame_time = std::chrono::steady_clock::now();
+    TimePoint lasttime = Clock::now();
     while (keep_running) {
-        auto current_frame_time = std::chrono::steady_clock::now();
-        std::chrono::duration<double> delta_time = current_frame_time - last_frame_time;
-        last_frame_time = current_frame_time;
+        TimePoint curtime = Clock::now();
+        Duration delta_time = curtime - lasttime;
+        lasttime = curtime;
 
-        // TODO: Implement game logic, state mutation, input handling, and rendering
-        // Example: total_loc += (rate_per_second * delta_time.count());
-
-        // Placeholder for now
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Small sleep to prevent 100% CPU usage
     }
 
