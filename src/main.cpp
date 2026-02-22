@@ -1,7 +1,6 @@
 #include <atomic>
 #include <csignal>
 #include <chrono>
-#include <cstdlib>
 #include <string>
 #include <thread>
 #include <ncurses.h>
@@ -42,11 +41,11 @@ struct Game {
 
     Game(double lps, double b) : linesPerSecond(lps) , buffs(b), lines(0), baseClickAmt(1.0),
         lpsToClick(0), clickBoostPercent(1.0) {
-            buildings.push_back({"Pulse", 15, 0.1, 0});
-            buildings.push_back({"Thread", 100, 1.0, 0});
-            buildings.push_back({"Stream", 1100, 8.0, 0});
-            buildings.push_back({"Aggregator", 12000, 47.0, 0});
-            buildings.push_back({"Torrent", 130000, 260.0, 0});
+            buildings.push_back({"Ping", 15, 0.1, 0});
+            buildings.push_back({"VDB-ICE", 100, 1.0, 0});
+            buildings.push_back({"Alt-ICE", 1100, 8.0, 0});
+            buildings.push_back({"CANTO", 12000, 47.0, 0});
+            buildings.push_back({"EREBUS", 130000, 260.0, 0});
             this->numBuildings = buildings.size();
     }
 
@@ -59,7 +58,7 @@ struct Game {
     }
     void buyBuilding(int index) {
         if (index >= numBuildings) {
-            exit(EXIT_FAILURE);
+            return;
         }
         double cost = buildings[index].getNextCost();
         if (cost <= this->lines) {
@@ -102,6 +101,9 @@ int main() {
 
     // Initialize ncurses
     initscr();              // Start curses mode
+    start_color();
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_RED, COLOR_BLACK);
     cbreak();               // Line buffering disabled, Pass on everything to me
     noecho();               // Don't echo() while we getch
     curs_set(0);            // Hide the cursor
@@ -140,17 +142,39 @@ int main() {
         game.updateTimers(delta_time.count());
 
         // Clear the feedback line first so old messages don't stick
-        move(8, 10); clrtoeol();
+        move(8, 2); clrtoeol();
         if (game.feedbackTimer > 0) {
             attron(A_BOLD);
-            mvprintw(8, 10, "+++ CLICKED FOR: %.2f +++", game.lastClickValue);
+            mvprintw(8, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
             attroff(A_BOLD);
         }
-        mvprintw(10, 10, "PRESS SPACE TO GAIN LINES (COOKIES)");
-        mvprintw(12, 10, "Lines:            %.2f ", game.lines);
-        mvprintw(14, 10, "Lines per second: %.2f", game.linesPerSecond * game.buffs);
-        mvprintw(16, 10, "Buff multiplier:  x%.2f", game.buffs);
-        mvprintw(18, 10, "Click LPS share:  %.0f%%", game.lpsToClick * 100);
+        mvprintw(10, 2, "BlackWall (SPACE TO BREACH)");
+        mvprintw(12, 2, "DATA:            %.2f ", game.lines);
+        mvprintw(14, 2, "DATA per second: %.2f", game.linesPerSecond * game.buffs);
+        mvprintw(16, 2, "Buff multiplier:  x%.2f", game.buffs);
+        mvprintw(18, 2, "DATA/SEC share to BREACH:  %.0f%%", game.lpsToClick * 100);
+        attron(A_BOLD);
+        mvprintw(24, 2, "QUICKHACKS - COUNT - DATA/SEC - NEXT COST");
+        mvprintw(25, 2, "------------------------------------------\n");
+        attroff(A_BOLD);
+        int baseline = 27;
+        for (int i = 0; i < game.buildings.size(); i++) {
+            mvprintw(baseline + i, 2, "[%d] %-18s %-6d %-10.2f", 
+                     i + 1, 
+                     game.buildings[i].name.c_str(), 
+                     game.buildings[i].count,
+                     game.buildings[i].baselps * game.buildings[i].count);
+        
+            double cost = game.buildings[i].getNextCost();
+            if (game.lines >= cost) {
+                attron(COLOR_PAIR(1)); // Green (Affordable)
+            } else {
+                attron(COLOR_PAIR(2)); // Red (Too expensive)
+            }
+            mvprintw(baseline + i, 40, "%.2f", cost);
+            attroff(COLOR_PAIR(1));
+            attroff(COLOR_PAIR(2));
+        }
         refresh();
 
         // check for click and process it too. maybe before the runcycle or after?
