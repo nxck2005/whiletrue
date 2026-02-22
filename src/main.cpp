@@ -142,17 +142,17 @@ int main() {
         game.updateTimers(delta_time.count());
 
         // Clear the feedback line first so old messages don't stick
-        move(8, 2); clrtoeol();
+        move(1, 2); clrtoeol();
         if (game.feedbackTimer > 0) {
             attron(A_BOLD);
-            mvprintw(8, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
+            mvprintw(1, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
             attroff(A_BOLD);
         }
-        mvprintw(10, 2, "BlackWall (SPACE TO BREACH)");
-        mvprintw(12, 2, "DATA:            %.2f ", game.lines);
-        mvprintw(14, 2, "DATA per second: %.2f", game.linesPerSecond * game.buffs);
-        mvprintw(16, 2, "Buff multiplier:  x%.2f", game.buffs);
-        mvprintw(18, 2, "DATA/SEC share to BREACH:  %.0f%%", game.lpsToClick * 100);
+        mvprintw(3, 2, "BlackWall (SPACE TO BREACH)");
+        mvprintw(5, 2, "DATA:            %.2f ", game.lines);
+        mvprintw(7, 2, "DATA per second: %.2f", game.linesPerSecond * game.buffs);
+        mvprintw(9, 2, "Buff multiplier:  x%.2f", game.buffs);
+        mvprintw(11, 2, "DATA/SEC share to BREACH:  %.0f%%", game.lpsToClick * 100);
         attron(A_BOLD);
         mvprintw(24, 2, "QUICKHACKS - COUNT - DATA/SEC - NEXT COST");
         mvprintw(25, 2, "------------------------------------------\n");
