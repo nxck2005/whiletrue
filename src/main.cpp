@@ -1,10 +1,12 @@
 #include <atomic>
 #include <csignal>
 #include <chrono>
+#include <cstdlib>
 #include <string>
 #include <thread>
 #include <ncurses.h>
 #include <cmath>
+#include <vector>
 
 using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
@@ -36,6 +38,7 @@ struct Game {
     double feedbackTimer = 0;
 
     std::vector<Building> buildings;
+    int numBuildings;
 
     Game(double lps, double b) : linesPerSecond(lps) , buffs(b), lines(0), baseClickAmt(1.0),
         lpsToClick(0), clickBoostPercent(1.0) {
@@ -44,8 +47,28 @@ struct Game {
             buildings.push_back({"Stream", 1100, 8.0, 0});
             buildings.push_back({"Aggregator", 12000, 47.0, 0});
             buildings.push_back({"Torrent", 130000, 260.0, 0});
+            this->numBuildings = buildings.size();
     }
-    
+
+    void updateLPS() {
+        double newlps = 0;
+        for (const auto& b : this->buildings) {
+            newlps += b.baselps * b.count;
+        }
+        this->linesPerSecond = newlps;
+    }
+    void buyBuilding(int index) {
+        if (index >= numBuildings) {
+            exit(EXIT_FAILURE);
+        }
+        double cost = buildings[index].getNextCost();
+        if (cost <= this->lines) {
+            this->buildings[index].count++;
+            this->lines -= cost;
+            updateLPS();
+        }
+        return;
+    }    
     void runCycle(double deltat) {
         this->lines += this->linesPerSecond * deltat * this->buffs;
         return;
@@ -85,7 +108,7 @@ int main() {
     nodelay(stdscr, TRUE);  // Don't wait for user input
 
     TimePoint lasttime = Clock::now();
-    Game game(1, 1.0);
+    Game game(0, 1.0);
     while (keep_running) {
         int ch;
         while ((ch = getch()) != ERR) {
@@ -97,8 +120,16 @@ int main() {
                 game.buffs += 0.1;
             } else if (ch == 'c') { // bought a cps % of lps
                 game.lpsToClick += 0.01;
-            } else if (ch == '1') { // increase lines per second
-                game.linesPerSecond += 1;
+            } else if (ch == '1') { // BUILDINGS
+                game.buyBuilding(0);
+            } else if (ch == '2') {
+                game.buyBuilding(1);
+            } else if (ch == '3') {
+                game.buyBuilding(2);
+            } else if (ch == '4') {
+                game.buyBuilding(3);
+            } else if (ch == '5') {
+                game.buyBuilding(4);
             }
         }
         TimePoint curtime = Clock::now();
