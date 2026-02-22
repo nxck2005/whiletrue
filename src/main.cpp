@@ -6,6 +6,7 @@
 #include <ncurses.h>
 #include <cmath>
 #include <vector>
+#include <fstream>
 
 using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
@@ -14,6 +15,9 @@ using Duration = std::chrono::duration<double>;
 // How fast subsequent building prices scale. lower it for an easier game
 // LPS should lag behind cost scaling
 double COST_SCALE_FACTOR = 1.15;
+
+// for save file consistency
+const int VERSION = 1;
 
 struct Building {
     std::string name;
@@ -84,6 +88,44 @@ struct Game {
     void updateTimers(double dt) {
         if (this->feedbackTimer > 0) this->feedbackTimer -= dt;
     }
+
+    void saveGame() {
+        std::ofstream saveFile("save_data.dat");
+        if (saveFile.is_open()) {
+            saveFile << VERSION << "\n";
+            saveFile << this->lines << "\n";
+            saveFile << this->buffs << "\n";
+            saveFile << this->linesPerSecond << "\n";
+
+            for (const auto& b : this->buildings) {
+                saveFile << b.count << "\n";
+            }
+            saveFile.close();
+        }
+    }
+
+    void loadGame() {
+        std::ifstream saveFile("save_data.dat");
+        if (!saveFile.is_open()) return;
+        int savedver;
+        if (!(saveFile >> savedver)) return;
+
+        if (savedver != VERSION) {
+            saveFile.close();
+            return;
+        }
+
+        saveFile >> this->lines;
+        saveFile >> this->buffs;
+        saveFile >> this->linesPerSecond;
+
+        for (auto& b : this->buildings) {
+            saveFile >> b.count;
+        }
+
+        updateLPS();
+        saveFile.close();
+    }
 };
 
 
@@ -111,6 +153,7 @@ int main() {
 
     TimePoint lasttime = Clock::now();
     Game game(0, 1.0);
+    game.loadGame();
     while (keep_running) {
         int ch;
         while ((ch = getch()) != ERR) {
@@ -132,6 +175,10 @@ int main() {
                 game.buyBuilding(3);
             } else if (ch == '5') {
                 game.buyBuilding(4);
+            } else if (ch == 's') {
+                game.saveGame();
+            } else if (ch == 'l') {
+                game.loadGame();
             }
         }
         TimePoint curtime = Clock::now();
