@@ -1,15 +1,31 @@
 #include <atomic>
 #include <csignal>
 #include <chrono>
+#include <string>
 #include <thread>
-#include <ncurses.h> // For ncurses UI
+#include <ncurses.h>
+#include <cmath>
 
 using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 using Duration = std::chrono::duration<double>;
 
-class Game {
-    public:
+// How fast subsequent building prices scale. lower it for an easier game
+// LPS should lag behind cost scaling
+double COST_SCALE_FACTOR = 1.15;
+
+struct Building {
+    std::string name;
+    double basecost;
+    double baselps;
+    int count;
+
+    double getNextCost() {
+        return this->basecost * std::pow(COST_SCALE_FACTOR, this->count);
+    }
+};
+
+struct Game {
     double linesPerSecond;
     double lines;
     double buffs;
@@ -19,8 +35,16 @@ class Game {
     double lastClickValue = 0;
     double feedbackTimer = 0;
 
+    std::vector<Building> buildings;
+
     Game(double lps, double b) : linesPerSecond(lps) , buffs(b), lines(0), baseClickAmt(1.0),
-        lpsToClick(0), clickBoostPercent(1.0) {}
+        lpsToClick(0), clickBoostPercent(1.0) {
+            buildings.push_back({"Pulse", 15, 0.1, 0});
+            buildings.push_back({"Thread", 100, 1.0, 0});
+            buildings.push_back({"Stream", 1100, 8.0, 0});
+            buildings.push_back({"Aggregator", 12000, 47.0, 0});
+            buildings.push_back({"Torrent", 130000, 260.0, 0});
+    }
     
     void runCycle(double deltat) {
         this->lines += this->linesPerSecond * deltat * this->buffs;
@@ -39,6 +63,7 @@ class Game {
         if (this->feedbackTimer > 0) this->feedbackTimer -= dt;
     }
 };
+
 
 // Is the game loop running?
 std::atomic<bool> keep_running{true};
@@ -72,7 +97,7 @@ int main() {
                 game.buffs += 0.1;
             } else if (ch == 'c') { // bought a cps % of lps
                 game.lpsToClick += 0.01;
-            } else if (ch == 'l') { // increase lines per second
+            } else if (ch == '1') { // increase lines per second
                 game.linesPerSecond += 1;
             }
         }
@@ -90,7 +115,7 @@ int main() {
             mvprintw(8, 10, "+++ CLICKED FOR: %.2f +++", game.lastClickValue);
             attroff(A_BOLD);
         }
-        mvprintw(10, 10, "WHILETRUE : IDLE CLICKER FOR THE TERMINAL");
+        mvprintw(10, 10, "PRESS SPACE TO GAIN LINES (COOKIES)");
         mvprintw(12, 10, "Lines:            %.2f ", game.lines);
         mvprintw(14, 10, "Lines per second: %.2f", game.linesPerSecond * game.buffs);
         mvprintw(16, 10, "Buff multiplier:  x%.2f", game.buffs);
