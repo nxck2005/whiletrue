@@ -15,9 +15,11 @@ using Duration = std::chrono::duration<double>;
 // How fast subsequent building prices scale. lower it for an easier game
 // LPS should lag behind cost scaling
 double COST_SCALE_FACTOR = 1.15;
+double BUFF_COST_SCALE_FACTOR = 1.5;
+double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
 
 // for save file consistency
-const int VERSION = 1;
+const int VERSION = 2;
 
 struct Building {
     std::string name;
@@ -39,6 +41,8 @@ struct Game {
     double clickBoostPercent; // for modifiers like 777x etc.
     double lastClickValue = 0;
     double feedbackTimer = 0;
+    int buffsBought = 0;
+    int clickSharesBought = 0;
 
     std::vector<Building> buildings;
     int numBuildings;
@@ -71,7 +75,35 @@ struct Game {
             updateLPS();
         }
         return;
-    }    
+    }
+
+    double getBuffCost() {
+        return 1000.0 * std::pow(BUFF_COST_SCALE_FACTOR, this->buffsBought);
+    }
+
+    double getClickShareCost() {
+        return 500.0 * std::pow(LPS_TO_CLICK_COST_SCALE_FACTOR, this->clickSharesBought);
+    }
+
+    void buyBuff() {
+        double nextCost = this->getBuffCost();
+        if (this->lines >= nextCost) {
+            this->lines -= nextCost;
+            this->buffs += 0.1;
+            this->buffsBought++;
+            this->updateLPS();
+        }
+    }
+
+    void buyClickShare() {
+        double nextCost = this->getClickShareCost();
+        if (this->lines >= nextCost) {
+            this->lines -= nextCost;
+            this->lpsToClick += 0.01;
+            this->clickSharesBought++;
+        }
+    }
+
     void runCycle(double deltat) {
         this->lines += this->linesPerSecond * deltat * this->buffs;
         return;
@@ -92,10 +124,14 @@ struct Game {
     void saveGame() {
         std::ofstream saveFile("save_data.dat");
         if (saveFile.is_open()) {
+
             saveFile << VERSION << "\n";
             saveFile << this->lines << "\n";
             saveFile << this->buffs << "\n";
             saveFile << this->linesPerSecond << "\n";
+            saveFile << this->buffsBought << "\n";
+            saveFile << this->clickSharesBought << "\n";
+            saveFile << this->lpsToClick << "\n";
 
             for (const auto& b : this->buildings) {
                 saveFile << b.count << "\n";
@@ -118,6 +154,9 @@ struct Game {
         saveFile >> this->lines;
         saveFile >> this->buffs;
         saveFile >> this->linesPerSecond;
+        saveFile >> this->buffsBought;
+        saveFile >> this->clickSharesBought;
+        saveFile >> this->lpsToClick;
 
         for (auto& b : this->buildings) {
             saveFile >> b.count;
@@ -144,9 +183,10 @@ int main() {
     // Initialize ncurses
     initscr();              // Start curses mode
     start_color();
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_RED, COLOR_BLACK);
-    cbreak();               // Line buffering disabled, Pass on everything to me
+    use_default_colors();
+    init_pair(1, COLOR_GREEN, -1);
+    init_pair(2, COLOR_RED, -1);
+    cbreak();               // Line buffering disabled
     noecho();               // Don't echo() while we getch
     curs_set(0);            // Hide the cursor
     nodelay(stdscr, TRUE);  // Don't wait for user input
@@ -162,9 +202,9 @@ int main() {
             } else if (ch == ' ') { // click
                 game.registerClick();
             } else if (ch == 'b') { // bought a buff
-                game.buffs += 0.1;
+                game.buyBuff();
             } else if (ch == 'c') { // bought a cps % of lps
-                game.lpsToClick += 0.01;
+                game.buyClickShare();
             } else if (ch == '1') { // BUILDINGS
                 game.buyBuilding(0);
             } else if (ch == '2') {
@@ -195,11 +235,21 @@ int main() {
             mvprintw(1, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
             attroff(A_BOLD);
         }
-        mvprintw(3, 2, "BlackWall (SPACE TO BREACH)");
+        mvprintw(3, 2, "BlackWall (SPACE TO BREACH AND GET DATA)");
         mvprintw(5, 2, "DATA:            %.2f ", game.lines);
         mvprintw(7, 2, "DATA per second: %.2f", game.linesPerSecond * game.buffs);
-        mvprintw(9, 2, "Buff multiplier:  x%.2f", game.buffs);
-        mvprintw(11, 2, "DATA/SEC share to BREACH:  %.0f%%", game.lpsToClick * 100);
+
+        // Buff Multiplier UI
+        mvprintw(9, 2, "[B] Overclock Multiplier: x%.2f", game.buffs);
+        if (game.lines >= game.getBuffCost()) attron(COLOR_PAIR(1)); else attron(COLOR_PAIR(2));
+        mvprintw(9, 36, "Cost: %.2f", game.getBuffCost());
+        attroff(COLOR_PAIR(1)); attroff(COLOR_PAIR(2));
+
+        // Click Share UI
+        mvprintw(11, 2, "[C] Breach DATA/SEC share: %.0f%%", game.lpsToClick * 100);
+        if (game.lines >= game.getClickShareCost()) attron(COLOR_PAIR(1)); else attron(COLOR_PAIR(2));
+        mvprintw(11, 36, "Cost: %.2f", game.getClickShareCost());
+        attroff(COLOR_PAIR(1)); attroff(COLOR_PAIR(2));
         attron(A_BOLD);
         mvprintw(24, 2, "QUICKHACKS - COUNT - DATA/SEC - NEXT COST");
         mvprintw(25, 2, "------------------------------------------\n");
