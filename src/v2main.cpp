@@ -19,7 +19,7 @@ double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
 double AUTOSAVE_INTERVAL = 30.0;
 
 // for save file consistency
-const int VERSION = 3;
+const int VERSION = 2;
 
 struct Building {
     std::string name;
@@ -191,47 +191,46 @@ int main() {
     std::signal(SIGINT, handle_sigint);
 
     // Initialize ncurses
-    initscr();              
+    initscr();              // Start curses mode
     start_color();
     use_default_colors();
     init_pair(1, COLOR_GREEN, -1);
     init_pair(2, COLOR_RED, -1);
-    init_pair(3, COLOR_CYAN, -1); // Let's add cyan for some Cyberpunk flair
-    cbreak();               
-    noecho();               
-    curs_set(0);            
-    nodelay(stdscr, TRUE);  
-
-    // size of the terminal so we can make responsive windows
-    int maxY, maxX;
-    getmaxyx(stdscr, maxY, maxX);
-
-    // Windows
-    WINDOW* header_win = newwin(3, maxX, 0, 0);
-    WINDOW* stats_win  = newwin(maxY - 3, maxX / 2, 3, 0);
-    WINDOW* shop_win   = newwin(maxY - 3, maxX - (maxX / 2), 3, maxX / 2);
+    cbreak();               // Line buffering disabled
+    noecho();               // Don't echo() while we getch
+    curs_set(0);            // Hide the cursor
+    nodelay(stdscr, TRUE);  // Don't wait for user input
 
     TimePoint lasttime = Clock::now();
     Game game(0, 1.0);
     game.loadGame();
-
     while (keep_running) {
         int ch;
         while ((ch = getch()) != ERR) {
-            if (ch == 'q' || ch == 27) { keep_running = false; } 
-            else if (ch == ' ') { game.registerClick(); } 
-            else if (ch == 'b') { game.buyBuff(); } 
-            else if (ch == 'c') { game.buyClickShare(); } 
-            else if (ch == '1') { game.buyBuilding(0); } 
-            else if (ch == '2') { game.buyBuilding(1); } 
-            else if (ch == '3') { game.buyBuilding(2); } 
-            else if (ch == '4') { game.buyBuilding(3); } 
-            else if (ch == '5') { game.buyBuilding(4); } 
-            else if (ch == 's') { game.saveGame(); } 
-            else if (ch == 'l') { game.loadGame(); }
+            if (ch == 'q' || ch == 27) { // esc to quit
+                keep_running = false;
+            } else if (ch == ' ') { // click
+                game.registerClick();
+            } else if (ch == 'b') { // bought a buff
+                game.buyBuff();
+            } else if (ch == 'c') { // bought a cps % of lps
+                game.buyClickShare();
+            } else if (ch == '1') { // BUILDINGS
+                game.buyBuilding(0);
+            } else if (ch == '2') {
+                game.buyBuilding(1);
+            } else if (ch == '3') {
+                game.buyBuilding(2);
+            } else if (ch == '4') {
+                game.buyBuilding(3);
+            } else if (ch == '5') {
+                game.buyBuilding(4);
+            } else if (ch == 's') {
+                game.saveGame();
+            } else if (ch == 'l') {
+                game.loadGame();
+            }
         }
-
-        // --- GAME LOGIC ---
         TimePoint curtime = Clock::now();
         Duration delta_time = curtime - lasttime;
         lasttime = curtime;
@@ -239,97 +238,65 @@ int main() {
         game.runCycle(delta_time.count());
         game.updateTimers(delta_time.count());
 
-        // --- RENDERING ---
-
-        // clear before redraw
-        werase(header_win);
-        werase(stats_win);
-        werase(shop_win);
-
-        // draw borders
-        box(header_win, 0, 0);
-        box(stats_win, 0, 0);
-        box(shop_win, 0, 0);
-
-        // draw titles
-        wattron(stats_win, COLOR_PAIR(3) | A_BOLD);
-        mvwprintw(stats_win, 0, 2, " [ TERMINAL ] ");
-        wattroff(stats_win, COLOR_PAIR(3) | A_BOLD);
-
-        wattron(shop_win, COLOR_PAIR(3) | A_BOLD);
-        mvwprintw(shop_win, 0, 2, " [ BLACK MARKET ] ");
-        wattroff(shop_win, COLOR_PAIR(3) | A_BOLD);
-
-        // alerts
+        // Clear the feedback line first so old messages don't stick
+        move(1, 2); clrtoeol();
         if (game.feedbackTimer > 0) {
-            wattron(header_win, A_BOLD);
-            mvwprintw(header_win, 1, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
-            wattroff(header_win, A_BOLD);
+            attron(A_BOLD);
+            mvprintw(1, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
+            attroff(A_BOLD);
         }
         if (game.autosaveFeedbackTimer > 0) {
-            wattron(header_win, COLOR_PAIR(1) | A_BOLD); 
-            mvwprintw(header_win, 1, maxX - 30, "[ SYSTEM: PROGRESS SAVED ]");
-            wattroff(header_win, COLOR_PAIR(1) | A_BOLD);
+            attron(COLOR_PAIR(1) | A_BOLD); // Make it green and bold
+            mvprintw(1, 45, "[ SYSTEM: PROGRESS SAVED ]");
+            attroff(COLOR_PAIR(1) | A_BOLD);
         }
+        mvprintw(3, 2, "BlackWall (SPACE TO BREACH AND GET DATA)");
+        mvprintw(5, 2, "DATA:            %.2f ", game.lines);
+        mvprintw(7, 2, "DATA per second: %.2f", game.linesPerSecond * game.buffs);
 
-        // stats
-        mvwprintw(stats_win, 2, 2, "TARGET: BlackWall");
-        wattron(stats_win, A_REVERSE); // Highlight the instruction
-        mvwprintw(stats_win, 3, 2, " PRESS SPACE TO BREACH ");
-        wattroff(stats_win, A_REVERSE);
-        
-        mvwprintw(stats_win, 5, 2, "DATA BANK:       %.2f", game.lines);
-        mvwprintw(stats_win, 6, 2, "DATA PER SEC:    %.2f", game.linesPerSecond * game.buffs);
+        // Buff Multiplier UI
+        mvprintw(9, 2, "[B] Overclock Multiplier: x%.2f", game.buffs);
+        if (game.lines >= game.getBuffCost()) attron(COLOR_PAIR(1)); else attron(COLOR_PAIR(2));
+        mvprintw(9, 36, "Cost: %.2f", game.getBuffCost());
+        attroff(COLOR_PAIR(1)); attroff(COLOR_PAIR(2));
 
-        // perm buff stats
-        mvwprintw(stats_win, 9, 2, "[B] Overclock Multiplier: x%.2f", game.buffs);
-        if (game.lines >= game.getBuffCost()) wattron(stats_win, COLOR_PAIR(1)); else wattron(stats_win, COLOR_PAIR(2));
-        mvwprintw(stats_win, 10, 6, "Cost: %.2f DATA", game.getBuffCost());
-        wattroff(stats_win, COLOR_PAIR(1)); wattroff(stats_win, COLOR_PAIR(2));
-
-        mvwprintw(stats_win, 12, 2, "[C] Breach DATA/SEC share: %.0f%%", game.lpsToClick * 100);
-        if (game.lines >= game.getClickShareCost()) wattron(stats_win, COLOR_PAIR(1)); else wattron(stats_win, COLOR_PAIR(2));
-        mvwprintw(stats_win, 13, 6, "Cost: %.2f DATA", game.getClickShareCost());
-        wattroff(stats_win, COLOR_PAIR(1)); wattroff(stats_win, COLOR_PAIR(2));
-
-
-        // shop
-        wattron(shop_win, A_BOLD);
-        mvwprintw(shop_win, 2, 2, "QUICKHACKS");
-        mvwprintw(shop_win, 3, 2, "------------------------------------------");
-        wattroff(shop_win, A_BOLD);
-        
+        // Click Share UI
+        mvprintw(11, 2, "[C] Breach DATA/SEC share: %.0f%%", game.lpsToClick * 100);
+        if (game.lines >= game.getClickShareCost()) attron(COLOR_PAIR(1)); else attron(COLOR_PAIR(2));
+        mvprintw(11, 36, "Cost: %.2f", game.getClickShareCost());
+        attroff(COLOR_PAIR(1)); attroff(COLOR_PAIR(2));
+        attron(A_BOLD);
+        mvprintw(24, 2, "QUICKHACKS - COUNT - DATA/SEC - NEXT COST");
+        mvprintw(25, 2, "------------------------------------------\n");
+        attroff(A_BOLD);
+        int baseline = 27;
         for (int i = 0; i < game.buildings.size(); i++) {
-            int y_pos = 5 + (i * 2); // Space them out nicely
-            mvwprintw(shop_win, y_pos, 2, "[%d] %-10s (Owned: %d)", 
-                     i + 1, game.buildings[i].name.c_str(), game.buildings[i].count);
-            
-            mvwprintw(shop_win, y_pos + 1, 6, "+%.2f D/s  |", game.buildings[i].baselps);
+            mvprintw(baseline + i, 2, "[%d] %-18s %-6d %-10.2f", 
+                     i + 1, 
+                     game.buildings[i].name.c_str(), 
+                     game.buildings[i].count,
+                     game.buildings[i].baselps * game.buildings[i].count);
         
             double cost = game.buildings[i].getNextCost();
             if (game.lines >= cost) {
-                wattron(shop_win, COLOR_PAIR(1)); 
+                attron(COLOR_PAIR(1)); // Green (Affordable)
             } else {
-                wattron(shop_win, COLOR_PAIR(2)); 
+                attron(COLOR_PAIR(2)); // Red (Too expensive)
             }
-            mvwprintw(shop_win, y_pos + 1, 22, " Cost: %.2f", cost);
-            wattroff(shop_win, COLOR_PAIR(1));
-            wattroff(shop_win, COLOR_PAIR(2));
+            mvprintw(baseline + i, 40, "%.2f", cost);
+            attroff(COLOR_PAIR(1));
+            attroff(COLOR_PAIR(2));
         }
+        refresh();
 
-        // refresh all windows
-        wrefresh(header_win);
-        wrefresh(stats_win);
-        wrefresh(shop_win);
+        // check for click and process it too. maybe before the runcycle or after?
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(16)); 
+        std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Small sleep to prevent 100% CPU usage
     }
 
-    // cleanup
+    // save before exiting obv
     game.saveGame();
-    delwin(header_win);
-    delwin(stats_win);
-    delwin(shop_win);
+    // Deinitialize ncurses
     endwin();
 
     return 0;
