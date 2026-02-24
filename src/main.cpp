@@ -304,7 +304,7 @@ int main() {
             mvwprintw(shop_win, y_pos, 2, "[%d] %-10s (Owned: %d)", 
                      i + 1, game.buildings[i].name.c_str(), game.buildings[i].count);
             
-            mvwprintw(shop_win, y_pos + 1, 6, "+%.2f D/s  |", game.buildings[i].baselps);
+            mvwprintw(shop_win, y_pos + 1, 6, "+%.2f D/s  ", game.buildings[i].baselps);
         
             double cost = game.buildings[i].getNextCost();
             if (game.lines >= cost) {
