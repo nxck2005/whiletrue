@@ -12,11 +12,11 @@ using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 using Duration = std::chrono::duration<double>;
 
-// How fast subsequent building prices scale. lower it for an easier game
-// LPS should lag behind cost scaling
+// -- constants -- //
 double COST_SCALE_FACTOR = 1.15;
 double BUFF_COST_SCALE_FACTOR = 1.5;
 double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
+double AUTOSAVE_INTERVAL = 30.0;
 
 // for save file consistency
 const int VERSION = 2;
@@ -41,6 +41,8 @@ struct Game {
     double clickBoostPercent; // for modifiers like 777x etc.
     double lastClickValue = 0;
     double feedbackTimer = 0;
+    double autosaveTimer = 0;
+    double autosaveFeedbackTimer = 0;
     int buffsBought = 0;
     int clickSharesBought = 0;
 
@@ -119,6 +121,14 @@ struct Game {
     }
     void updateTimers(double dt) {
         if (this->feedbackTimer > 0) this->feedbackTimer -= dt;
+        if (this->autosaveFeedbackTimer > 0) this->autosaveFeedbackTimer -= dt;
+
+        this->autosaveTimer += dt;
+        if (this->autosaveTimer >= AUTOSAVE_INTERVAL) {
+            this->saveGame();
+            this->autosaveTimer = 0;
+            this->autosaveFeedbackTimer = 2.0; // show notif for 2 secs
+        }
     }
 
     void saveGame() {
@@ -235,6 +245,11 @@ int main() {
             mvprintw(1, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
             attroff(A_BOLD);
         }
+        if (game.autosaveFeedbackTimer > 0) {
+            attron(COLOR_PAIR(1) | A_BOLD); // Make it green and bold
+            mvprintw(1, 45, "[ SYSTEM: PROGRESS SAVED ]");
+            attroff(COLOR_PAIR(1) | A_BOLD);
+        }
         mvprintw(3, 2, "BlackWall (SPACE TO BREACH AND GET DATA)");
         mvprintw(5, 2, "DATA:            %.2f ", game.lines);
         mvprintw(7, 2, "DATA per second: %.2f", game.linesPerSecond * game.buffs);
@@ -279,6 +294,8 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Small sleep to prevent 100% CPU usage
     }
 
+    // save before exiting obv
+    game.saveGame();
     // Deinitialize ncurses
     endwin();
 
