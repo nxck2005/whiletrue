@@ -21,6 +21,29 @@ double AUTOSAVE_INTERVAL = 30.0;
 // for save file consistency
 const int VERSION = 3;
 
+// format digits, needs audit
+std::string formatNumber(double num) {
+    if (num < 1000.0) {
+        char buffer[32];
+        snprintf(buffer, sizeof(buffer), "%.2f", num);
+        return std::string(buffer);
+    }
+
+    const char* suffixes[] = {"", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"};
+    int suffixIndex = 0;
+    double displayNum = num;
+
+    // Keep dividing by 1000 until the number is < 1000, or we run out of suffixes
+    while (displayNum >= 1000.0 && suffixIndex < 11) {
+        displayNum /= 1000.0;
+        suffixIndex++;
+    }
+
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%.2f%s", displayNum, suffixes[suffixIndex]);
+    return std::string(buffer);
+}
+
 struct Building {
     std::string name;
     double basecost;
@@ -196,7 +219,7 @@ int main() {
     use_default_colors();
     init_pair(1, COLOR_GREEN, -1);
     init_pair(2, COLOR_RED, -1);
-    init_pair(3, COLOR_CYAN, -1); // Let's add cyan for some Cyberpunk flair
+    init_pair(3, COLOR_CYAN, -1);
     cbreak();               
     noecho();               
     curs_set(0);            
@@ -263,7 +286,7 @@ int main() {
         // alerts
         if (game.feedbackTimer > 0) {
             wattron(header_win, A_BOLD);
-            mvwprintw(header_win, 1, 2, "+++ BREACHED FOR: %.2f DATA +++", game.lastClickValue);
+            mvwprintw(header_win, 1, 2, "+++ BREACHED FOR: %s DATA +++", formatNumber(game.lastClickValue).c_str());
             wattroff(header_win, A_BOLD);
         }
         if (game.autosaveFeedbackTimer > 0) {
@@ -274,22 +297,22 @@ int main() {
 
         // stats
         mvwprintw(stats_win, 2, 2, "TARGET: BlackWall");
-        wattron(stats_win, A_REVERSE); // Highlight the instruction
+        wattron(stats_win, A_REVERSE); // instruction highlight
         mvwprintw(stats_win, 3, 2, " PRESS SPACE TO BREACH ");
         wattroff(stats_win, A_REVERSE);
         
-        mvwprintw(stats_win, 5, 2, "DATA BANK:       %.2f", game.lines);
-        mvwprintw(stats_win, 6, 2, "DATA PER SEC:    %.2f", game.linesPerSecond * game.buffs);
+        mvwprintw(stats_win, 5, 2, "DATA BANK:       %s", formatNumber(game.lines).c_str());
+        mvwprintw(stats_win, 6, 2, "DATA PER SEC:    %s", formatNumber(game.linesPerSecond * game.buffs).c_str());
 
-        // perm buff stats
+        // perm ups
         mvwprintw(stats_win, 9, 2, "[B] Overclock Multiplier: x%.2f", game.buffs);
         if (game.lines >= game.getBuffCost()) wattron(stats_win, COLOR_PAIR(1)); else wattron(stats_win, COLOR_PAIR(2));
-        mvwprintw(stats_win, 10, 6, "Cost: %.2f DATA", game.getBuffCost());
+        mvwprintw(stats_win, 10, 6, "Cost: %s DATA", formatNumber(game.getBuffCost()).c_str());
         wattroff(stats_win, COLOR_PAIR(1)); wattroff(stats_win, COLOR_PAIR(2));
 
         mvwprintw(stats_win, 12, 2, "[C] Breach DATA/SEC share: %.0f%%", game.lpsToClick * 100);
         if (game.lines >= game.getClickShareCost()) wattron(stats_win, COLOR_PAIR(1)); else wattron(stats_win, COLOR_PAIR(2));
-        mvwprintw(stats_win, 13, 6, "Cost: %.2f DATA", game.getClickShareCost());
+        mvwprintw(stats_win, 13, 6, "Cost: %s DATA", formatNumber(game.getClickShareCost()).c_str());
         wattroff(stats_win, COLOR_PAIR(1)); wattroff(stats_win, COLOR_PAIR(2));
 
 
@@ -300,11 +323,11 @@ int main() {
         wattroff(shop_win, A_BOLD);
         
         for (int i = 0; i < game.buildings.size(); i++) {
-            int y_pos = 5 + (i * 2); // Space them out nicely
+            int y_pos = 5 + (i * 2);
             mvwprintw(shop_win, y_pos, 2, "[%d] %-10s (Owned: %d)", 
                      i + 1, game.buildings[i].name.c_str(), game.buildings[i].count);
             
-            mvwprintw(shop_win, y_pos + 1, 6, "+%.2f D/s  ", game.buildings[i].baselps);
+            mvwprintw(shop_win, y_pos + 1, 6, "+%s D/s  |", formatNumber(game.buildings[i].baselps).c_str());
         
             double cost = game.buildings[i].getNextCost();
             if (game.lines >= cost) {
@@ -312,7 +335,7 @@ int main() {
             } else {
                 wattron(shop_win, COLOR_PAIR(2)); 
             }
-            mvwprintw(shop_win, y_pos + 1, 22, " Cost: %.2f", cost);
+            mvwprintw(shop_win, y_pos + 1, 22, " Cost: %s", formatNumber(cost).c_str());
             wattroff(shop_win, COLOR_PAIR(1));
             wattroff(shop_win, COLOR_PAIR(2));
         }
