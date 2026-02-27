@@ -13,13 +13,13 @@ using TimePoint = std::chrono::time_point<Clock>;
 using Duration = std::chrono::duration<double>;
 
 // -- constants -- //
-double COST_SCALE_FACTOR = 1.15;
-double BUFF_COST_SCALE_FACTOR = 1.5;
-double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
-double AUTOSAVE_INTERVAL = 30.0;
+const double COST_SCALE_FACTOR = 1.15;
+const double BUFF_COST_SCALE_FACTOR = 1.5;
+const double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
+const double AUTOSAVE_INTERVAL = 30.0;
 
 // for save file consistency
-const int VERSION = 3;
+const int VERSION = 4;
 
 // format digits, needs audit
 std::string formatNumber(double num) {
@@ -75,10 +75,18 @@ struct Game {
     Game(double lps, double b) : linesPerSecond(lps) , buffs(b), lines(0), baseClickAmt(1.0),
         lpsToClick(0), clickBoostPercent(1.0) {
             buildings.push_back({"Ping", 15, 0.1, 0});
-            buildings.push_back({"VDB-ICE", 100, 1.0, 0});
-            buildings.push_back({"Alt-ICE", 1100, 8.0, 0});
-            buildings.push_back({"CANTO", 12000, 47.0, 0});
-            buildings.push_back({"EREBUS", 130000, 260.0, 0});
+            buildings.push_back({"Neural Link", 100, 1.0, 0});
+            buildings.push_back({"Coprocessor", 1100, 8.0, 0});
+            buildings.push_back({"Grouped Subnet Breach", 12000, 47.0, 0});
+            buildings.push_back({"Daemon", 130000, 260.0, 0});
+            buildings.push_back({"Deep Dive Port", 1400000, 1400.0, 0});
+            buildings.push_back({"Micro-AI", 20000000, 7800.0, 0});
+            buildings.push_back({"L.I.L.I.T.H.", 330000000, 44000, 0});
+            buildings.push_back({"Bartmoss' Cyberdeck", 5100000000, 260000, 0});
+            buildings.push_back({"Project Oracle", 75000000000, 1600000, 0});
+            buildings.push_back({"Cynosure Datacore", 1000000000000, 1000000, 0}); // 1T
+            buildings.push_back({"Neural Matrix", 14000000000000, 65000000, 0});
+            buildings.push_back({"Alt", 170000000000000, 430000000, 0});
             this->numBuildings = buildings.size();
     }
 
