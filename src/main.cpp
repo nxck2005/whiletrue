@@ -19,7 +19,7 @@ const double COST_SCALE_FACTOR = 1.15;
 const double BUFF_COST_SCALE_FACTOR = 1.5;
 const double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
 const double AUTOSAVE_INTERVAL = 30.0;
-const double CACHE_BUFF_DURATION = 30.0;
+const double CACHE_BUFF_DURATION = 10.0;
 const double CACHE_BUFF_PERCENT = 777.0;
 
 // for save file consistency
@@ -384,7 +384,7 @@ int main() {
         for (int i = 0; i < game.buildings.size(); i++) {
             int y_pos = 5 + (i * 2);
             mvwprintw(shop_win, y_pos, 2, "[%d] %-10s (Owned: %d)", 
-                     i + 1, game.buildings[i].name.c_str(), game.buildings[i].count);
+                     i, game.buildings[i].name.c_str(), game.buildings[i].count);
             
             mvwprintw(shop_win, y_pos + 1, 6, "+%s D/s  |", formatNumber(game.buildings[i].baselps).c_str());
         
