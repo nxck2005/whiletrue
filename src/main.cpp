@@ -72,7 +72,7 @@ struct Game {
     double autosaveFeedbackTimer = 0;
     int buffsBought = 0;
     int clickSharesBought = 0;
-    double cacheSpawnTimer = std::rand() % 90;
+    double cacheSpawnTimer = std::rand() % 300;
     double cacheActiveTimer = 0;
     double cacheBuffDurationTimer = 0;
     bool cacheOnScreen = false;
@@ -186,8 +186,8 @@ struct Game {
             this->cacheActiveTimer -= dt;
             if (this->cacheActiveTimer <= 0) {
                 this->cacheOnScreen = false;
-                // randomize next spawn between 45 and 90 seconds
-                this->cacheSpawnTimer = 45.0 + (std::rand() % 45); 
+                // randomize next spawn between 300 and 400 seconds
+                this->cacheSpawnTimer = 300 + (std::rand() % 100); 
             }
         }
     }
