@@ -305,9 +305,9 @@ int main() {
             else if (ch == '7') { game.buyBuilding(7); }
             else if (ch == '8') { game.buyBuilding(8); }
             else if (ch == '9') { game.buyBuilding(9); }
-            else if (ch == '0') { game.buyBuilding(10); }
-            else if (ch == '-') { game.buyBuilding(11); } 
-            else if (ch == '=') { game.buyBuilding(12); } 
+            else if (ch == '-') { game.buyBuilding(10); }
+            else if (ch == '=') { game.buyBuilding(11); } 
+            else if (ch == ']') { game.buyBuilding(12); } 
             else if (ch == 's') { game.saveGame(); } 
             else if (ch == 'l') { game.loadGame(); }
             else if (ch == 'g') { game.catchCache(); }
