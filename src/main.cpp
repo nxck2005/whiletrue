@@ -3,10 +3,12 @@
 #include <chrono>
 #include <string>
 #include <thread>
-#include <ncurses.h>
 #include <cmath>
 #include <vector>
 #include <fstream>
+#include <cstdlib>
+#include <random>
+#include <ncurses.h>
 
 using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
@@ -17,9 +19,11 @@ const double COST_SCALE_FACTOR = 1.15;
 const double BUFF_COST_SCALE_FACTOR = 1.5;
 const double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
 const double AUTOSAVE_INTERVAL = 30.0;
+const double CACHE_BUFF_DURATION = 30.0;
+const double CACHE_BUFF_PERCENT = 777.0;
 
 // for save file consistency
-const int VERSION = 4;
+const int VERSION = 5;
 
 // format digits, needs audit
 std::string formatNumber(double num) {
@@ -33,7 +37,7 @@ std::string formatNumber(double num) {
     int suffixIndex = 0;
     double displayNum = num;
 
-    // Keep dividing by 1000 until the number is < 1000, or we run out of suffixes
+    // repeated div until num < 1000 or ran out of indexes
     while (displayNum >= 1000.0 && suffixIndex < 11) {
         displayNum /= 1000.0;
         suffixIndex++;
@@ -68,6 +72,11 @@ struct Game {
     double autosaveFeedbackTimer = 0;
     int buffsBought = 0;
     int clickSharesBought = 0;
+    double cacheSpawnTimer = std::rand() % 90;
+    double cacheActiveTimer = 0;
+    double cacheBuffDurationTimer = 0;
+    bool cacheOnScreen = false;
+    std::string activeAlert = "";
 
     std::vector<Building> buildings;
     int numBuildings;
@@ -160,6 +169,27 @@ struct Game {
             this->autosaveTimer = 0;
             this->autosaveFeedbackTimer = 2.0; // show notif for 2 secs
         }
+        if (this->cacheBuffDurationTimer > 0) {
+            this->cacheBuffDurationTimer -= dt;
+            if (this->cacheBuffDurationTimer <= 0) {
+                this->clickBoostPercent = 1.0; // reset click boost to normal
+                this->activeAlert = "";
+            }
+        }
+        if (!this->cacheOnScreen) {
+            this->cacheSpawnTimer -= dt;
+            if (this->cacheSpawnTimer <= 0) {
+                this->cacheOnScreen = true;
+                this->cacheActiveTimer = 10.0; // player has 10 seconds to catch it
+            }
+        } else {
+            this->cacheActiveTimer -= dt;
+            if (this->cacheActiveTimer <= 0) {
+                this->cacheOnScreen = false;
+                // randomize next spawn between 45 and 90 seconds
+                this->cacheSpawnTimer = 45.0 + (std::rand() % 45); 
+            }
+        }
     }
 
     void saveGame() {
@@ -206,6 +236,18 @@ struct Game {
         updateLPS();
         saveFile.close();
     }
+    void catchCache() {
+        if (this->cacheOnScreen) {
+            this->cacheOnScreen = false;
+            this->cacheSpawnTimer = 45.0 + (std::rand() % 45); // Reset spawn timer
+            
+            // apply 777x for 15 secs
+            this->cacheBuffDurationTimer = CACHE_BUFF_DURATION;
+            this->clickBoostPercent = CACHE_BUFF_PERCENT;
+            this->activeAlert = "BREACH PROTOCOL: 777x DATA MINING FOR 30s!"; // TODO: change to be dynamic
+            this->feedbackTimer = 2.0; 
+        }
+    }
 };
 
 
@@ -231,7 +273,7 @@ int main() {
     cbreak();               
     noecho();               
     curs_set(0);            
-    nodelay(stdscr, TRUE);  
+    nodelay(stdscr, TRUE);
 
     // size of the terminal so we can make responsive windows
     int maxY, maxX;
@@ -260,6 +302,7 @@ int main() {
             else if (ch == '5') { game.buyBuilding(4); } 
             else if (ch == 's') { game.saveGame(); } 
             else if (ch == 'l') { game.loadGame(); }
+            else if (ch == 'g') { game.catchCache(); }
         }
 
         // --- GAME LOGIC ---
@@ -346,6 +389,20 @@ int main() {
             mvwprintw(shop_win, y_pos + 1, 22, " Cost: %s", formatNumber(cost).c_str());
             wattroff(shop_win, COLOR_PAIR(1));
             wattroff(shop_win, COLOR_PAIR(2));
+        }
+
+        // Render the Golden Cache prompt
+        if (game.cacheOnScreen) {
+            wattron(header_win, COLOR_PAIR(3) | A_BLINK | A_BOLD); // Cyan and blinking
+            mvwprintw(header_win, 2, 2, " [!] ANOMALOUS SIGNAL DETECTED - PRESS 'g' TO INTERCEPT [!] "); // TODO: choose a more apt location
+            wattroff(header_win, COLOR_PAIR(3) | A_BLINK | A_BOLD);
+        }
+
+        // Render active buff status
+        if (game.cacheBuffDurationTimer > 0) {
+            wattron(stats_win, COLOR_PAIR(1) | A_BOLD); // Green and bold
+            mvwprintw(stats_win, 7, 2, "%s (%.1fs)", game.activeAlert.c_str(), game.cacheBuffDurationTimer);
+            wattroff(stats_win, COLOR_PAIR(1) | A_BOLD);
         }
 
         // refresh all windows
