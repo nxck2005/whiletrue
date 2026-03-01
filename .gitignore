@@ -44,3 +44,4 @@
 GEMINI.md
 *.dat
 old/
+build/
