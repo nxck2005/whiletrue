@@ -9,7 +9,7 @@ BUILD_DIR = build
 TARGET = $(BUILD_DIR)/whiletrue
 
 # Source files
-SRCS = $(SRC_DIR)/main.cpp $(SRC_DIR)/game.cpp $(SRC_DIR)/renderer.cpp $(SRC_DIR)/utils.cpp
+SRCS = $(SRC_DIR)/main.cpp $(SRC_DIR)/game.cpp $(SRC_DIR)/renderer.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/input_handler.cpp
 OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 
 # Default target
