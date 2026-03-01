@@ -87,6 +87,10 @@ void Renderer::drawSplashScreen() {
 }
 
 Renderer::~Renderer() {
+    // Explicitly destroy windows BEFORE endwin()
+    header_win.reset();
+    stats_win.reset();
+    shop_win.reset();
     endwin();
 }
 
@@ -126,9 +130,23 @@ void Renderer::drawHeader(const Game& game) {
     mvwprintw(win, 0, 2, " [ SYSTEM STATUS ] ");
     wattroff(win, COLOR_PAIR(3) | A_BOLD);
 
+    // Decorative Metadata
+    mvwprintw(win, 1, 2, "CONN: SECURE-AES-256");
+    mvwprintw(win, 1, 25, "LATENCY: %dms", (std::rand() % 10) + 5);
+    
+    // CPU Load Bar
+    mvwprintw(win, 1, 45, "CPU: [");
+    int load = (int)(game.linesPerSecond > 0 ? 8 : 1) + (std::rand() % 3);
+    if (game.feedbackTimer > 0) load = 12; // Spike on click
+    for (int i = 0; i < 15; i++) {
+        if (i < load) waddch(win, '|' | COLOR_PAIR(1));
+        else waddch(win, '.' | A_DIM);
+    }
+    waddch(win, ']');
+
     if (game.feedbackTimer > 0) {
         wattron(win, A_BOLD);
-        mvwprintw(win, 1, 2, "+++ BREACHED FOR: %s DATA +++", Utils::formatNumber(game.lastClickValue).c_str());
+        mvwprintw(win, 2, 2, "+++ BREACHED FOR: %s DATA +++", Utils::formatNumber(game.lastClickValue).c_str());
         wattroff(win, A_BOLD);
     }
     if (game.autosaveFeedbackTimer > 0) {
@@ -139,7 +157,7 @@ void Renderer::drawHeader(const Game& game) {
 
     if (game.cacheOnScreen) {
         wattron(win, COLOR_PAIR(3) | A_BLINK | A_BOLD);
-        mvwprintw(win, 2, 2, " [!] ANOMALOUS SIGNAL DETECTED - PRESS 'g' TO INTERCEPT [!] ");
+        mvwprintw(win, 2, maxX - 65, " [!] ANOMALOUS SIGNAL DETECTED - PRESS 'g' TO INTERCEPT [!] ");
         wattroff(win, COLOR_PAIR(3) | A_BLINK | A_BOLD);
     }
 }
@@ -150,7 +168,7 @@ void Renderer::drawStats(const Game& game) {
     mvwprintw(win, 0, 2, " [ TERMINAL ] ");
     wattroff(win, COLOR_PAIR(3) | A_BOLD);
 
-    mvwprintw(win, 2, 2, "TARGET: BlackWall");
+    mvwprintw(win, 2, 2, "TARGET: BlackWall_Mainframe_Node7");
     wattron(win, A_REVERSE);
     mvwprintw(win, 3, 2, " PRESS SPACE TO BREACH ");
     wattroff(win, A_REVERSE);
@@ -173,6 +191,16 @@ void Renderer::drawStats(const Game& game) {
     if (game.lines >= game.getClickShareCost()) wattron(win, COLOR_PAIR(1)); else wattron(win, COLOR_PAIR(2));
     mvwprintw(win, 13, 6, "Cost: %s DATA", Utils::formatNumber(game.getClickShareCost()).c_str());
     wattroff(win, COLOR_PAIR(1)); wattroff(win, COLOR_PAIR(2));
+
+    // Data Stream Log
+    int startLine = 15;
+    wattron(win, A_DIM | A_BOLD);
+    mvwprintw(win, startLine++, 2, "--- LOG_STREAM_INITIALIZED ---");
+    wattroff(win, A_DIM | A_BOLD);
+    
+    for (size_t i = 0; i < game.actionLog.size(); i++) {
+        mvwprintw(win, startLine + i, 2, "> %s", game.actionLog[i].c_str());
+    }
 }
 
 void Renderer::moveSelection(int dir, int max) {

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <deque>
 #include "building.hpp"
 #include "constants.hpp"
 
@@ -24,6 +25,7 @@ public:
     double cacheBuffDurationTimer;
     bool cacheOnScreen;
     std::string activeAlert;
+    std::deque<std::string> actionLog;
 
     std::vector<Building> buildings;
     int numBuildings;
@@ -43,4 +45,5 @@ public:
     void saveGame() const;
     void loadGame();
     void catchCache();
+    void addLog(const std::string& msg);
 };

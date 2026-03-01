@@ -59,6 +59,7 @@ void Game::buyBuilding(int index) {
     if (cost <= this->lines) {
         this->buildings[index].count++;
         this->lines -= cost;
+        addLog("SYSTEM: Purchased [" + buildings[index].name + "]");
         updateLPS();
     }
 }
@@ -77,6 +78,7 @@ void Game::buyBuff() {
         this->lines -= nextCost;
         this->buffs += 0.1;
         this->buffsBought++;
+        addLog("SYSTEM: Overclock updated to x" + std::to_string(this->buffs).substr(0,4));
         this->updateLPS();
     }
 }
@@ -87,6 +89,7 @@ void Game::buyClickShare() {
         this->lines -= nextCost;
         this->lpsToClick += 0.01;
         this->clickSharesBought++;
+        addLog("SYSTEM: Click Share increased to " + std::to_string(int(this->lpsToClick * 100)) + "%");
     }
 }
 
@@ -101,6 +104,11 @@ void Game::registerClick() {
     this->lines += linesToAdd;
     this->lastClickValue = linesToAdd;
     this->feedbackTimer = 0.35f;
+
+    // Random hex-like packet capture for the log
+    char hex[9];
+    sprintf(hex, "%08X", (unsigned int)(std::rand() % 0xFFFFFFFF));
+    addLog("PKT: [" + std::string(hex) + "] captured (" + std::to_string(int(linesToAdd)) + "B)");
 }
 
 void Game::updateTimers(double dt) {
@@ -112,6 +120,9 @@ void Game::updateTimers(double dt) {
         this->saveGame();
         this->autosaveTimer = 0;
         this->autosaveFeedbackTimer = 2.0;
+        // In Game::updateTimers we can't easily add a log from saveGame because it's const, 
+        // but we can add it here.
+        addLog("SYSTEM: Auto-save complete.");
     }
     if (this->cacheBuffDurationTimer > 0) {
         this->cacheBuffDurationTimer -= dt;
@@ -170,7 +181,6 @@ void Game::loadGame() {
         
         int savedver = save_data.value("version", 0);
         if (savedver != VERSION) {
-            // Optional: Handle migration logic here
             return;
         }
 
@@ -195,9 +205,10 @@ void Game::loadGame() {
             }
         }
 
+        addLog("SYSTEM: State recovered. Ver " + std::to_string(savedver));
         updateLPS();
     } catch (const std::exception& e) {
-        // Corrupt save or incompatible format
+        addLog("SYSTEM ERROR: Save data corrupted.");
     }
     
     saveFile.close();
@@ -211,5 +222,13 @@ void Game::catchCache() {
         this->clickBoostPercent = CACHE_BUFF_PERCENT;
         this->activeAlert = "BREACH PROTOCOL: 777x DATA MINING FOR 30s!";
         this->feedbackTimer = 2.0; 
+        addLog("SIGNAL: Anomalous intercept successful.");
+    }
+}
+
+void Game::addLog(const std::string& msg) {
+    actionLog.push_front(msg);
+    if (actionLog.size() > 8) {
+        actionLog.pop_back();
     }
 }
