@@ -125,7 +125,7 @@ void Renderer::drawShop(const Game& game) {
         mvwprintw(win, y_pos, 2, "[%zu] %-10s (Owned: %d)", 
                  i, game.buildings[i].name.c_str(), game.buildings[i].count);
         
-        mvwprintw(win, y_pos + 1, 6, "+%s D/s  |", Utils::formatNumber(game.buildings[i].baselps).c_str());
+        mvwprintw(win, y_pos + 1, 6, "+%s D/s  -- ", Utils::formatNumber(game.buildings[i].baselps).c_str());
     
         double cost = game.buildings[i].getNextCost();
         if (game.lines >= cost) {
