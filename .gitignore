@@ -45,3 +45,4 @@ GEMINI.md
 *.dat
 old/
 build/
+save_data.json
