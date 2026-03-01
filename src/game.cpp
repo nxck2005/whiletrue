@@ -17,7 +17,7 @@ Game::Game(double lps, double b)
 }
 
 void Game::loadBuildings() {
-    std::ifstream f("../data/buildings.json");
+    std::ifstream f("./data/buildings.json");
     if (f.is_open()) {
         try {
             json data = json::parse(f);
