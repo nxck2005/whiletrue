@@ -12,6 +12,10 @@ InputHandler::InputHandler() {
     keyMap['q'] = GameAction::QUIT;
     keyMap[27]  = GameAction::QUIT; // ESC
     keyMap[KEY_RESIZE] = GameAction::RESIZE;
+    keyMap[KEY_UP] = GameAction::MOVE_UP;
+    keyMap[KEY_DOWN] = GameAction::MOVE_DOWN;
+    keyMap['\n'] = GameAction::BUY_SELECTED;
+    keyMap[KEY_ENTER] = GameAction::BUY_SELECTED;
 
     // Building Keys
     buildingKeys['0'] = 0;

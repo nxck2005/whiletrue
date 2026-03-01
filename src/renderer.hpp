@@ -12,12 +12,15 @@ public:
 
     void render(const Game& game);
     void handleResize();
+    void moveSelection(int dir, int max);
+    int getSelectedIndex() const { return selectedBuildingIndex; }
 
 private:
     std::unique_ptr<Window> header_win;
     std::unique_ptr<Window> stats_win;
     std::unique_ptr<Window> shop_win;
     int maxY, maxX;
+    int selectedBuildingIndex = 0;
 
     void drawHeader(const Game& game);
     void drawStats(const Game& game);

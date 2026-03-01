@@ -12,6 +12,7 @@ Renderer::Renderer() {
     noecho();
     curs_set(0);
     nodelay(stdscr, TRUE);
+    keypad(stdscr, TRUE);
 
     getmaxyx(stdscr, maxY, maxX);
 
@@ -109,6 +110,12 @@ void Renderer::drawStats(const Game& game) {
     wattroff(win, COLOR_PAIR(1)); wattroff(win, COLOR_PAIR(2));
 }
 
+void Renderer::moveSelection(int dir, int max) {
+    selectedBuildingIndex += dir;
+    if (selectedBuildingIndex < 0) selectedBuildingIndex = 0;
+    if (selectedBuildingIndex >= max) selectedBuildingIndex = max - 1;
+}
+
 void Renderer::drawShop(const Game& game) {
     WINDOW* win = shop_win->get();
     wattron(win, COLOR_PAIR(3) | A_BOLD);
@@ -119,14 +126,43 @@ void Renderer::drawShop(const Game& game) {
     mvwprintw(win, 2, 2, "QUICKHACKS");
     mvwprintw(win, 3, 2, "------------------------------------------");
     wattroff(win, A_BOLD);
-    
-    for (size_t i = 0; i < game.buildings.size(); i++) {
-        int y_pos = 5 + (i * 2);
-        mvwprintw(win, y_pos, 2, "[%zu] %-10s (Owned: %d)", 
-                 i, game.buildings[i].name.c_str(), game.buildings[i].count);
-        
-        mvwprintw(win, y_pos + 1, 6, "+%s D/s  -- ", Utils::formatNumber(game.buildings[i].baselps).c_str());
-    
+
+    // Calculate how many items can be displayed
+    // Start at y=5, each item is 2 lines. Box and title use some space.
+    int winHeight, winWidth;
+    getmaxyx(win, winHeight, winWidth);
+    (void)winWidth;
+    int displayableCount = (winHeight - 6) / 2;
+    if (displayableCount < 1) displayableCount = 1;
+
+    // Static scrolling offset calculation to keep selection in view
+    static int scrollOffset = 0;
+    if (selectedBuildingIndex < scrollOffset) {
+        scrollOffset = selectedBuildingIndex;
+    } else if (selectedBuildingIndex >= scrollOffset + displayableCount) {
+        scrollOffset = selectedBuildingIndex - displayableCount + 1;
+    }
+
+    int endIndex = scrollOffset + displayableCount;
+    if (endIndex > (int)game.buildings.size()) endIndex = game.buildings.size();
+
+    for (int i = scrollOffset; i < endIndex; i++) {
+        int relativeIdx = i - scrollOffset;
+        int y_pos = 5 + (relativeIdx * 2);
+
+        bool isSelected = (i == selectedBuildingIndex);
+        if (isSelected) wattron(win, A_BOLD);
+
+        if (isSelected) {
+            mvwprintw(win, y_pos, 2, "[%zu] [[ %-10s ]] (Owned: %d)", 
+                     (size_t)i, game.buildings[i].name.c_str(), game.buildings[i].count);
+        } else {
+            mvwprintw(win, y_pos, 2, "[%zu]    %-10s    (Owned: %d)", 
+                     (size_t)i, game.buildings[i].name.c_str(), game.buildings[i].count);
+        }
+
+        mvwprintw(win, y_pos + 1, 6, "+%s D/s  |", Utils::formatNumber(game.buildings[i].baselps).c_str());
+
         double cost = game.buildings[i].getNextCost();
         if (game.lines >= cost) {
             wattron(win, COLOR_PAIR(1)); 
@@ -136,5 +172,11 @@ void Renderer::drawShop(const Game& game) {
         mvwprintw(win, y_pos + 1, 22, " Cost: %s", Utils::formatNumber(cost).c_str());
         wattroff(win, COLOR_PAIR(1));
         wattroff(win, COLOR_PAIR(2));
+
+        if (isSelected) {
+            wattroff(win, A_BOLD);
+        }
     }
+    if (scrollOffset > 0) mvwprintw(win, 4, winWidth - 3, "^");
+    if (endIndex < (int)game.buildings.size()) mvwprintw(win, winHeight - 2, winWidth - 3, "v");
 }

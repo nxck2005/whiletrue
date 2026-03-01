@@ -12,6 +12,9 @@ enum class GameAction {
     LOAD,
     CATCH_CACHE,
     RESIZE,
+    MOVE_UP,
+    MOVE_DOWN,
+    BUY_SELECTED,
     QUIT
 };
 

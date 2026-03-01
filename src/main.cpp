@@ -61,6 +61,15 @@ int main() {
                 case GameAction::RESIZE:
                     renderer.handleResize();
                     break;
+                case GameAction::MOVE_UP:
+                    renderer.moveSelection(-1, game.buildings.size());
+                    break;
+                case GameAction::MOVE_DOWN:
+                    renderer.moveSelection(1, game.buildings.size());
+                    break;
+                case GameAction::BUY_SELECTED:
+                    game.buyBuilding(renderer.getSelectedIndex());
+                    break;
                 case GameAction::NONE:
                 default:
                     break;
