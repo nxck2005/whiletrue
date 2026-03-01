@@ -2,6 +2,9 @@
 #include <fstream>
 #include <cstdlib>
 #include <random>
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 Game::Game(double lps, double b) 
     : linesPerSecond(lps), lines(0), buffs(b), baseClickAmt(1.0),
@@ -9,21 +12,35 @@ Game::Game(double lps, double b)
       autosaveTimer(0), autosaveFeedbackTimer(0), buffsBought(0), clickSharesBought(0),
       cacheActiveTimer(0), cacheBuffDurationTimer(0), cacheOnScreen(false), activeAlert("") {
     
-    buildings.push_back({"Ping", 15, 0.1, 0});
-    buildings.push_back({"Neural Link", 100, 1.0, 0});
-    buildings.push_back({"Coprocessor", 1100, 8.0, 0});
-    buildings.push_back({"Grouped Subnet Breach", 12000, 47.0, 0});
-    buildings.push_back({"Daemon", 130000, 260.0, 0});
-    buildings.push_back({"Deep Dive Port", 1400000, 1400.0, 0});
-    buildings.push_back({"Micro-AI", 20000000, 7800.0, 0});
-    buildings.push_back({"L.I.L.I.T.H.", 330000000, 44000, 0});
-    buildings.push_back({"Bartmoss' Cyberdeck", 5100000000, 260000, 0});
-    buildings.push_back({"Project Oracle", 75000000000, 1600000, 0});
-    buildings.push_back({"Cynosure Datacore", 1000000000000, 1000000, 0});
-    buildings.push_back({"Neural Matrix", 14000000000000, 65000000, 0});
-    buildings.push_back({"Alt", 170000000000000, 430000000, 0});
-    this->numBuildings = buildings.size();
+    loadBuildings();
     this->cacheSpawnTimer = std::rand() % 300;
+}
+
+void Game::loadBuildings() {
+    std::ifstream f("../data/buildings.json");
+    if (f.is_open()) {
+        try {
+            json data = json::parse(f);
+            this->buildings.clear();
+            for (const auto& item : data) {
+                this->buildings.push_back({
+                    item.at("name").get<std::string>(),
+                    item.at("basecost").get<double>(),
+                    item.at("baselps").get<double>(),
+                    0
+                });
+            }
+        } catch (const std::exception& e) {
+            // fallback if json is malformed
+        }
+    }
+    
+    // Fallback if file not found or empty
+    if (this->buildings.empty()) {
+        buildings.push_back({"BUILDING LOAD ERROR", 404, 0.1, 0});
+    }
+
+    this->numBuildings = buildings.size();
 }
 
 void Game::updateLPS() {
@@ -154,8 +171,11 @@ void Game::loadGame() {
     saveFile >> this->clickSharesBought;
     saveFile >> this->lpsToClick;
 
-    for (auto& b : this->buildings) {
-        saveFile >> b.count;
+    for (size_t i = 0; i < this->buildings.size(); i++) {
+        int count;
+        if (saveFile >> count) {
+            this->buildings[i].count = count;
+        }
     }
 
     updateLPS();

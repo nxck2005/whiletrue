@@ -30,6 +30,7 @@ public:
 
     Game(double lps, double b);
 
+    void loadBuildings();
     void updateLPS();
     void buyBuilding(int index);
     double getBuffCost() const;

@@ -1,0 +1,15 @@
+[
+  { "name": "Ping", "basecost": 15, "baselps": 0.1 },
+  { "name": "Neural Link", "basecost": 100, "baselps": 1.0 },
+  { "name": "Coprocessor", "basecost": 1100, "baselps": 8.0 },
+  { "name": "Grouped Subnet Breach", "basecost": 12000, "baselps": 47.0 },
+  { "name": "Daemon", "basecost": 130000, "baselps": 260.0 },
+  { "name": "Deep Dive Port", "basecost": 1400000, "baselps": 1400.0 },
+  { "name": "Micro-AI", "basecost": 20000000, "baselps": 7800.0 },
+  { "name": "L.I.L.I.T.H.", "basecost": 330000000, "baselps": 44000.0 },
+  { "name": "Bartmoss' Cyberdeck", "basecost": 5100000000, "baselps": 260000.0 },
+  { "name": "Project Oracle", "basecost": 75000000000, "baselps": 1600000.0 },
+  { "name": "Cynosure Datacore", "basecost": 1000000000000, "baselps": 1000000.0 },
+  { "name": "Neural Matrix", "basecost": 14000000000000, "baselps": 65000000.0 },
+  { "name": "Alt", "basecost": 170000000000000, "baselps": 430000000.0 }
+]
