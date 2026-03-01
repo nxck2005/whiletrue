@@ -11,6 +11,7 @@ enum class GameAction {
     SAVE,
     LOAD,
     CATCH_CACHE,
+    RESIZE,
     QUIT
 };
 

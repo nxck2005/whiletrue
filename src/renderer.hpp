@@ -1,7 +1,9 @@
 #pragma once
 
 #include <ncurses.h>
+#include <memory>
 #include "game.hpp"
+#include "window.hpp"
 
 class Renderer {
 public:
@@ -9,11 +11,12 @@ public:
     ~Renderer();
 
     void render(const Game& game);
+    void handleResize();
 
 private:
-    WINDOW* header_win;
-    WINDOW* stats_win;
-    WINDOW* shop_win;
+    std::unique_ptr<Window> header_win;
+    std::unique_ptr<Window> stats_win;
+    std::unique_ptr<Window> shop_win;
     int maxY, maxX;
 
     void drawHeader(const Game& game);

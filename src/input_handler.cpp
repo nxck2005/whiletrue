@@ -11,6 +11,7 @@ InputHandler::InputHandler() {
     keyMap['g'] = GameAction::CATCH_CACHE;
     keyMap['q'] = GameAction::QUIT;
     keyMap[27]  = GameAction::QUIT; // ESC
+    keyMap[KEY_RESIZE] = GameAction::RESIZE;
 
     // Building Keys
     buildingKeys['0'] = 0;

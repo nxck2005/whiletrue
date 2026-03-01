@@ -58,6 +58,9 @@ int main() {
                 case GameAction::CATCH_CACHE:
                     game.catchCache();
                     break;
+                case GameAction::RESIZE:
+                    renderer.handleResize();
+                    break;
                 case GameAction::NONE:
                 default:
                     break;

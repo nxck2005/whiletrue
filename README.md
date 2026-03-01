@@ -1,7 +1,7 @@
 # whiletrue
 ![License](https://img.shields.io/github/license/nxck2005/whiletrue?color=green)
 ![Language](https://img.shields.io/github/languages/top/nxck2005/whiletrue?color=blue)
-![C++11](https://img.shields.io/badge/std-C%2B%2B11-blue)
+![C++23](https://img.shields.io/badge/std-C%2B%2B23-blue)
 ![Repo Size](https://img.shields.io/github/repo-size/nxck2005/whiletrue)
 ![Status](https://img.shields.io/badge/status-active-success)
 
@@ -15,7 +15,7 @@
 
 ## Requirements
 
-- **C++11 Compiler** (e.g., `g++`)
+- **C++23 Compiler** (e.g., `g++ 12+`)
 - **ncurses library**
 - **pthread library**
 
