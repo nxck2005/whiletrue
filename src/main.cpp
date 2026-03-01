@@ -26,6 +26,9 @@ int main() {
     Renderer renderer;
     InputHandler inputHandler;
 
+    // Display splash screen and wait for input
+    renderer.drawSplashScreen();
+
     TimePoint lasttime = Clock::now();
 
     while (keep_running) {
@@ -45,9 +48,6 @@ int main() {
                     break;
                 case GameAction::BUY_CLICK_SHARE:
                     game.buyClickShare();
-                    break;
-                case GameAction::BUY_BUILDING:
-                    game.buyBuilding(cmd.index);
                     break;
                 case GameAction::SAVE:
                     game.saveGame();

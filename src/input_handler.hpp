@@ -7,7 +7,6 @@ enum class GameAction {
     BREACH,
     BUY_BUFF,
     BUY_CLICK_SHARE,
-    BUY_BUILDING,
     SAVE,
     LOAD,
     CATCH_CACHE,
@@ -20,7 +19,7 @@ enum class GameAction {
 
 struct Command {
     GameAction action;
-    int index; // Used for building index
+    int index; // Still useful if we want to pass context
 };
 
 class InputHandler {
@@ -30,5 +29,4 @@ class InputHandler {
 
     private:
         std::map<int, GameAction> keyMap;
-        std::map<int, int> buildingKeys;
 };

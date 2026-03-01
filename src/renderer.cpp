@@ -1,7 +1,13 @@
 #include "renderer.hpp"
 #include "utils.hpp"
+#include "json.hpp"
+#include <fstream>
+#include <clocale>
+
+using json = nlohmann::json;
 
 Renderer::Renderer() {
+    std::setlocale(LC_ALL, "");
     initscr();
     start_color();
     use_default_colors();
@@ -16,9 +22,68 @@ Renderer::Renderer() {
 
     getmaxyx(stdscr, maxY, maxX);
 
+    // Load assets
+    std::string assetPath = "./data/assets.json";
+    std::ifstream f(assetPath);
+    if (f.is_open()) {
+        try {
+            json data = json::parse(f);
+            if (data.contains("splash_banner") && data["splash_banner"].is_array()) {
+                splashBanner.clear();
+                for (const auto& line : data["splash_banner"]) {
+                    splashBanner.push_back(line.get<std::string>());
+                }
+            }
+        } catch (...) { /* ignore */ }
+    }
+
     header_win = std::make_unique<Window>(3, maxX, 0, 0);
     stats_win  = std::make_unique<Window>(maxY - 3, maxX / 2, 3, 0);
     shop_win   = std::make_unique<Window>(maxY - 3, maxX - (maxX / 2), 3, maxX / 2);
+}
+
+void Renderer::drawSplashScreen() {
+    bool waiting = true;
+    nodelay(stdscr, FALSE);
+    
+    while (waiting) {
+        erase();
+        getmaxyx(stdscr, maxY, maxX);
+        
+        int bannerHeight = splashBanner.size();
+        int maxWidth = 0;
+        for (const auto& line : splashBanner) {
+            if ((int)line.length() > maxWidth) maxWidth = line.length();
+        }
+
+        int startY = (maxY / 2) - (bannerHeight / 2) - 2;
+        int bannerStartX = (maxX / 2) - (maxWidth / 2);
+        
+        if (bannerHeight > 0) {
+            attron(COLOR_PAIR(3) | A_BOLD);
+            for (int i = 0; i < bannerHeight; ++i) {
+                mvprintw(startY + i, bannerStartX, "%s", splashBanner[i].c_str());
+            }
+            attroff(COLOR_PAIR(3) | A_BOLD);
+        }
+
+        attron(A_BLINK | A_BOLD);
+        std::string msg = "--- PRESS ANY KEY TO INITIALIZE BREACH ---";
+        mvprintw(startY + bannerHeight + 4, (maxX / 2) - (msg.length() / 2), "%s", msg.c_str());
+        attroff(A_BLINK | A_BOLD);
+        
+        refresh();
+
+        int ch = getch();
+        if (ch != KEY_RESIZE) {
+            waiting = false;
+        } else {
+            // Re-initialize windows or state if needed on resize during splash
+            handleResize();
+        }
+    }
+    
+    nodelay(stdscr, TRUE);
 }
 
 Renderer::~Renderer() {
