@@ -9,7 +9,6 @@ public:
     ~Renderer();
 
     void render(const Game& game);
-    bool shouldQuit() const;
 
 private:
     WINDOW* header_win;
