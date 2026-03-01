@@ -7,6 +7,8 @@
 
 `whiletrue` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
 
+<video src="data/demo.mp4" controls width="100%"></video>
+
 ## Features
 
 - **Pretty damn retro**: A retro-styled UI with dedicated windows for system status, terminal logs, and the black market.
