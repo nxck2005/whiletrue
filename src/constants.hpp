@@ -12,4 +12,4 @@ const double CACHE_BUFF_PERCENT = 777.0;
 
 // -- System Constants -- //
 const int VERSION = 5;
-const std::string SAVE_FILE_NAME = "save_data.dat";
+const std::string SAVE_FILE_NAME = "save_data.json";

@@ -136,19 +136,27 @@ void Game::updateTimers(double dt) {
 }
 
 void Game::saveGame() const {
+    json save_data;
+    save_data["version"] = VERSION;
+    save_data["lines"] = this->lines;
+    save_data["buffs"] = this->buffs;
+    save_data["linesPerSecond"] = this->linesPerSecond;
+    save_data["buffsBought"] = this->buffsBought;
+    save_data["clickSharesBought"] = this->clickSharesBought;
+    save_data["lpsToClick"] = this->lpsToClick;
+
+    json buildings_data = json::array();
+    for (const auto& b : this->buildings) {
+        buildings_data.push_back({
+            {"name", b.name},
+            {"count", b.count}
+        });
+    }
+    save_data["buildings"] = buildings_data;
+
     std::ofstream saveFile(SAVE_FILE_NAME);
     if (saveFile.is_open()) {
-        saveFile << VERSION << "\n";
-        saveFile << this->lines << "\n";
-        saveFile << this->buffs << "\n";
-        saveFile << this->linesPerSecond << "\n";
-        saveFile << this->buffsBought << "\n";
-        saveFile << this->clickSharesBought << "\n";
-        saveFile << this->lpsToClick << "\n";
-
-        for (const auto& b : this->buildings) {
-            saveFile << b.count << "\n";
-        }
+        saveFile << save_data.dump(4);
         saveFile.close();
     }
 }
@@ -156,29 +164,42 @@ void Game::saveGame() const {
 void Game::loadGame() {
     std::ifstream saveFile(SAVE_FILE_NAME);
     if (!saveFile.is_open()) return;
-    int savedver;
-    if (!(saveFile >> savedver)) return;
 
-    if (savedver != VERSION) {
-        saveFile.close();
-        return;
-    }
-
-    saveFile >> this->lines;
-    saveFile >> this->buffs;
-    saveFile >> this->linesPerSecond;
-    saveFile >> this->buffsBought;
-    saveFile >> this->clickSharesBought;
-    saveFile >> this->lpsToClick;
-
-    for (size_t i = 0; i < this->buildings.size(); i++) {
-        int count;
-        if (saveFile >> count) {
-            this->buildings[i].count = count;
+    try {
+        json save_data = json::parse(saveFile);
+        
+        int savedver = save_data.value("version", 0);
+        if (savedver != VERSION) {
+            // Optional: Handle migration logic here
+            return;
         }
-    }
 
-    updateLPS();
+        this->lines = save_data.value("lines", 0.0);
+        this->buffs = save_data.value("buffs", 1.0);
+        this->linesPerSecond = save_data.value("linesPerSecond", 0.0);
+        this->buffsBought = save_data.value("buffsBought", 0);
+        this->clickSharesBought = save_data.value("clickSharesBought", 0);
+        this->lpsToClick = save_data.value("lpsToClick", 0.0);
+
+        if (save_data.contains("buildings") && save_data["buildings"].is_array()) {
+            for (const auto& b_data : save_data["buildings"]) {
+                std::string name = b_data.value("name", "");
+                int count = b_data.value("count", 0);
+
+                for (auto& b : this->buildings) {
+                    if (b.name == name) {
+                        b.count = count;
+                        break;
+                    }
+                }
+            }
+        }
+
+        updateLPS();
+    } catch (const std::exception& e) {
+        // Corrupt save or incompatible format
+    }
+    
     saveFile.close();
 }
 
