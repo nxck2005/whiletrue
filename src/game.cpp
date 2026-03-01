@@ -228,7 +228,7 @@ void Game::catchCache() {
 
 void Game::addLog(const std::string& msg) {
     actionLog.push_front(msg);
-    if (actionLog.size() > 8) {
+    if (actionLog.size() > EYE_CANDY_LOG_SIZE) {
         actionLog.pop_back();
     }
 }

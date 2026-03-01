@@ -168,7 +168,7 @@ void Renderer::drawStats(const Game& game) {
     mvwprintw(win, 0, 2, " [ TERMINAL ] ");
     wattroff(win, COLOR_PAIR(3) | A_BOLD);
 
-    mvwprintw(win, 2, 2, "TARGET: BlackWall_Mainframe_Node7");
+    mvwprintw(win, 2, 2, "TARGET: Blackwall");
     wattron(win, A_REVERSE);
     mvwprintw(win, 3, 2, " PRESS SPACE TO BREACH ");
     wattroff(win, A_REVERSE);
