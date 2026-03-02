@@ -52,7 +52,7 @@ make clean
 | Key | Action |
 |-----|--------|
 | `Space` | Manually breach (Generate DATA) |
-| `0-9, -, =, ]` | Purchase Quickhacks (Buildings) |
+| `Up, Down arrow keys to select, then ENTER` | Purchase Quickhacks (Buildings) |
 | `b` | Purchase Overclock Multiplier |
 | `c` | Purchase DATA/SEC click share |
 | `g` | Intercept Anomalous Signal (Golden Cache/Cookie) |
