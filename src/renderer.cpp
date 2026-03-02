@@ -146,7 +146,8 @@ void Renderer::drawHeader(const Game& game) {
 
     if (game.feedbackTimer > 0) {
         wattron(win, A_BOLD);
-        mvwprintw(win, 2, 2, "+++ BREACHED FOR: %s DATA +++", Utils::formatNumber(game.lastClickValue).c_str());
+        // uncomment for more click feedback
+        // mvwprintw(win, 2, 2, "+++ BREACHED FOR: %s DATA +++", Utils::formatNumber(game.lastClickValue).c_str());
         wattroff(win, A_BOLD);
     }
     if (game.autosaveFeedbackTimer > 0) {
