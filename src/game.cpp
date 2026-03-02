@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <random>
 #include "json.hpp"
+#include "utils.hpp"
 
 using json = nlohmann::json;
 
@@ -108,7 +109,7 @@ void Game::registerClick() {
     // Random hex-like packet capture for the log
     char hex[9];
     sprintf(hex, "%08X", (unsigned int)(std::rand() % 0xFFFFFFFF));
-    addLog("PKT: [" + std::string(hex) + "] captured (" + std::to_string(int(linesToAdd)) + "B)");
+    addLog("PKT: [" + std::string(hex) + "] captured (" + Utils::formatNumber((linesToAdd)) + " DATA)");
 }
 
 void Game::updateTimers(double dt) {
@@ -181,6 +182,7 @@ void Game::loadGame() {
         
         int savedver = save_data.value("version", 0);
         if (savedver != VERSION) {
+            addLog("SYSTEM RESET: Save data version mismatch! Reset to defaults.");
             return;
         }
 
