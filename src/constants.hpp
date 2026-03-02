@@ -9,8 +9,8 @@ const double LPS_TO_CLICK_COST_SCALE_FACTOR = 1.8;
 const double AUTOSAVE_INTERVAL = 30.0;
 const double CACHE_BUFF_DURATION = 10.0;
 const double CACHE_BUFF_PERCENT = 777.0;
-const int EYE_CANDY_LOG_SIZE = 16;
 
 // -- System Constants -- //
 const int VERSION = 5;
 const std::string SAVE_FILE_NAME = "save_data.json";
+const int EYE_CANDY_LOG_SIZE = 4;
