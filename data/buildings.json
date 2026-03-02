@@ -9,7 +9,7 @@
   { "name": "L.I.L.I.T.H.", "basecost": 330000000, "baselps": 44000.0 },
   { "name": "Bartmoss' Cyberdeck", "basecost": 5100000000, "baselps": 260000.0 },
   { "name": "Project Oracle", "basecost": 75000000000, "baselps": 1600000.0 },
-  { "name": "Cynosure Datacore", "basecost": 1000000000000, "baselps": 1000000.0 },
+  { "name": "Cynosure Datacore", "basecost": 10000000000000, "baselps": 1000000.0 },
   { "name": "Neural Matrix", "basecost": 14000000000000, "baselps": 65000000.0 },
   { "name": "Alt", "basecost": 170000000000000, "baselps": 430000000.0 }
 ]
