@@ -5,7 +5,7 @@
 ![Repo Size](https://img.shields.io/github/repo-size/nxck2005/whiletrue)
 ![Status](https://img.shields.io/badge/status-active-success)
 
-`whiletrue` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
+`whiletrue` or `Cybergrind` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
 
 ![Demo GIF](data/demo_gif.gif)
 
