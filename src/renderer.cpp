@@ -136,8 +136,8 @@ void Renderer::drawHeader(const Game& game) {
     
     // CPU Load Bar
     mvwprintw(win, 1, 45, "CPU: [");
-    int load = (int)(game.linesPerSecond > 0 ? 8 : 1) + (std::rand() % 3);
-    if (game.feedbackTimer > 0) load = 12; // Spike on click
+    int load = (int)(game.linesPerSecond > 0 ? 4 : 1) + (std::rand() % 3);
+    if (game.feedbackTimer > 0) load = 9 + (std::rand() % 3); // Spike on click
     for (int i = 0; i < 15; i++) {
         if (i < load) waddch(win, '|' | COLOR_PAIR(1));
         else waddch(win, '.' | A_DIM);

@@ -2,7 +2,7 @@
 ![License](https://img.shields.io/github/license/nxck2005/whiletrue?color=green)
 ![Language](https://img.shields.io/github/languages/top/nxck2005/whiletrue?color=blue)
 ![C++23](https://img.shields.io/badge/std-C%2B%2B23-blue)
-![Repo Size](https://img.shields.io/github/repo-size/nxck2005/whiletrue)
+<!-- ![Repo Size](https://img.shields.io/github/repo-size/nxck2005/whiletrue) -->
 ![Status](https://img.shields.io/badge/status-active-success)
 
 `whiletrue` or `Cybergrind` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
@@ -13,7 +13,7 @@
 
 - **Pretty damn retro**: A retro-styled UI with dedicated windows for system status, terminal logs, and the black market.
 - **Somewhat addicting**: Start by manually breaching (pressing space) and work your way up to.. no....
-- **Persistent progress**: Your progress is automatically saved every 30 seconds and upon exiting the game, in the folder where you ran the build from. (save_data.dat)
+- **Persistent progress**: Your progress is automatically saved every 30 seconds and upon exiting the game, in the folder where you ran the build from. (save_data.json)
 
 ## Requirements
 

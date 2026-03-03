@@ -19,7 +19,7 @@ enum class GameAction {
 
 struct Command {
     GameAction action;
-    int index; // Still useful if we want to pass context
+    int index; // Still useful if we want to pass context about a building
 };
 
 class InputHandler {
