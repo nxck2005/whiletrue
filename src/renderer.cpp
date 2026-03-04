@@ -109,7 +109,7 @@ void Renderer::drawSplashScreen() {
         }
 
         attron(A_BLINK | A_BOLD);
-        std::string msg = "--- PRESS ANY KEY TO INITIALIZE BREACH ---";
+        std::string msg = "--- PRESS SPACE TO INITIALIZE BREACH ---";
         mvprintw(startY + bannerHeight + 4, (maxX / 2) - (msg.length() / 2), "%s", msg.c_str());
         attroff(A_BLINK | A_BOLD);
         
