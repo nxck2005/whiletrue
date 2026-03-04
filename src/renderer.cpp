@@ -131,7 +131,7 @@ void Renderer::drawHeader(const Game& game) {
     wattroff(win, COLOR_PAIR(3) | A_BOLD);
 
     // Decorative Metadata
-    mvwprintw(win, 1, 2, "CONN: SECURE-AES-256");
+    mvwprintw(win, 1, 2, "CONN: APOGEE_NODE_6");
     mvwprintw(win, 1, 25, "LATENCY: %.1lfms", game.lastdeltat * 1000);
     
     // CPU Load Bar
