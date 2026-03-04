@@ -1,6 +1,6 @@
 # Maintainer: Nick <nick@example.com>
 pkgname=cybergrind-git
-pkgver=r1.0b
+pkgver=r61.35b80ff
 pkgrel=1
 pkgdesc="A terminal-based idle game with a cyberpunk theme"
 arch=('x86_64')
