@@ -15,6 +15,6 @@ const double CACHE_BUFF_PERCENT = 777.0;
 #define DATA_DIR "./data"
 #endif
 
-const int VERSION = 5;
+const int VERSION = 1;
 const std::string SAVE_FILE_NAME = "save_data.json";
 const int EYE_CANDY_LOG_SIZE = 4;

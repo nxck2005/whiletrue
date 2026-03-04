@@ -1,29 +1,29 @@
 # Maintainer: Nick <nick@example.com>
 pkgname=cybergrind-git
-pkgver=r5.1.0.0
+pkgver=r1.0b
 pkgrel=1
 pkgdesc="A terminal-based idle game with a cyberpunk theme"
 arch=('x86_64')
-url="https://github.com/nick/whiletrue" # Keep repo URL as whiletrue
+url="https://github.com/nxck2005/whiletrue"
 license=('Apache')
 depends=('ncurses')
 makedepends=('git' 'gcc' 'make')
 provides=('cybergrind')
 conflicts=('cybergrind')
-source=('whiletrue::git+https://github.com/yourusername/whiletrue.git')
+source=('cybergrind::git+https://github.com/nxck2005/whiletrue.git')
 md5sums=('SKIP')
 
 pkgver() {
-  cd "$srcdir/whiletrue"
+  cd "$srcdir/cybergrind"
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 build() {
-  cd "$srcdir/whiletrue"
-  make
+  cd "$srcdir/cybergrind"
+  make PREFIX=/usr
 }
 
 package() {
-  cd "$srcdir/whiletrue"
+  cd "$srcdir/cybergrind"
   make DESTDIR="$pkgdir" PREFIX=/usr install
 }
