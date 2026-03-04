@@ -4,6 +4,7 @@
 ![C++23](https://img.shields.io/badge/std-C%2B%2B23-blue)
 <!-- ![Repo Size](https://img.shields.io/github/repo-size/nxck2005/whiletrue) -->
 ![Status](https://img.shields.io/badge/status-active-success)
+![Visitors](https://visitor-badge.laobi.icu/badge?page_id=nxck2005.whiletrue)
 
 `whiletrue` or `Cybergrind` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
 
