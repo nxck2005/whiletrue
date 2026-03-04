@@ -69,8 +69,8 @@ yay -S cybergrind-git
 Alternatively, you can build the package manually using the provided `PKGBUILD`:
 
 ```bash
-git clone https://github.com/nxck2005/whiletrue.git
-cd whiletrue
+git clone https://aur.archlinux.org/cybergrind-git.git
+cd cybergrind-git
 makepkg -si
 ```
 
