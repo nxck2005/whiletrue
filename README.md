@@ -16,7 +16,7 @@
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=nxck2005.whiletrue)
 
 
-`whiletrue` or `Cybergrind` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
+`Cybergrind` is a cyberpunk-themed terminal idle game, that you can run on the side while working. Made for my ADHD-self initially.
 
 ![Demo GIF](data/demo_gif.gif)
 
@@ -24,7 +24,7 @@
 
 - **Pretty damn retro**: A retro-styled UI with dedicated windows for system status, terminal logs, and the black market.
 - **Somewhat addicting**: Start by manually breaching (pressing space) and work your way up to.. no....
-- **Persistent progress**: Your progress is automatically saved every 30 seconds and upon exiting the game, in the folder where you ran the build from. (save_data.json)
+- **Persistent progress**: Your progress is automatically saved every 30 seconds and upon exiting the game. Saves are stored in your XDG data directory (e.g., `~/.local/share/cybergrind/save_data.json`).
 
 ## Requirements
 
@@ -56,6 +56,22 @@ To remove build artifacts:
 
 ```bash
 make clean
+```
+
+### Arch Linux (AUR)
+
+If you are on Arch Linux, you can install the game from the AUR (using an AUR helper like `yay` or `paru`):
+
+```bash
+yay -S cybergrind-git
+```
+
+Alternatively, you can build the package manually using the provided `PKGBUILD`:
+
+```bash
+git clone https://github.com/nxck2005/whiletrue.git
+cd whiletrue
+makepkg -si
 ```
 
 ## Controls

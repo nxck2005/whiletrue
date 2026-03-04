@@ -11,6 +11,10 @@ const double CACHE_BUFF_DURATION = 10.0;
 const double CACHE_BUFF_PERCENT = 777.0;
 
 // -- System Constants -- //
+#ifndef DATA_DIR
+#define DATA_DIR "./data"
+#endif
+
 const int VERSION = 5;
 const std::string SAVE_FILE_NAME = "save_data.json";
 const int EYE_CANDY_LOG_SIZE = 4;

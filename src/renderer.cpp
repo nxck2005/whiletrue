@@ -26,7 +26,7 @@ Renderer::Renderer() {
     getmaxyx(stdscr, maxY, maxX);
 
     // Load assets from banners.txt
-    std::string bannersPath = "./data/banners.txt";
+    std::string bannersPath = Utils::getDataPath("banners.txt");
     std::ifstream bf(bannersPath);
     std::vector<std::vector<std::string>> allBanners;
     if (bf.is_open()) {
@@ -55,7 +55,7 @@ Renderer::Renderer() {
 
     // Fallback to assets.json if banners.txt was empty or missing
     if (splashBanner.empty()) {
-        std::string assetPath = "./data/assets.json";
+        std::string assetPath = Utils::getDataPath("assets.json");
         std::ifstream f(assetPath);
         if (f.is_open()) {
             try {

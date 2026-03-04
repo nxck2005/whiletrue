@@ -18,7 +18,8 @@ Game::Game(double lps, double b)
 }
 
 void Game::loadBuildings() {
-    std::ifstream f("./data/buildings.json");
+    std::string path = Utils::getDataPath("buildings.json");
+    std::ifstream f(path);
     if (f.is_open()) {
         try {
             json data = json::parse(f);
@@ -167,7 +168,7 @@ void Game::saveGame() {
     }
     save_data["buildings"] = buildings_data;
 
-    std::ofstream saveFile(SAVE_FILE_NAME);
+    std::ofstream saveFile(Utils::getSavePath());
     if (saveFile.is_open()) {
         saveFile << save_data.dump(4);
         saveFile.close();
@@ -176,7 +177,7 @@ void Game::saveGame() {
 }
 
 void Game::loadGame() {
-    std::ifstream saveFile(SAVE_FILE_NAME);
+    std::ifstream saveFile(Utils::getSavePath());
     if (!saveFile.is_open()) return;
 
     try {
