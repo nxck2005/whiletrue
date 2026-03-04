@@ -3,11 +3,14 @@
 #include "json.hpp"
 #include <fstream>
 #include <clocale>
+#include <cstdlib>
+#include <ctime>
 
 using json = nlohmann::json;
 
 Renderer::Renderer() {
     std::setlocale(LC_ALL, "");
+    std::srand(std::time(nullptr));
     initscr();
     start_color();
     use_default_colors();
@@ -22,19 +25,57 @@ Renderer::Renderer() {
 
     getmaxyx(stdscr, maxY, maxX);
 
-    // Load assets
-    std::string assetPath = "./data/assets.json";
-    std::ifstream f(assetPath);
-    if (f.is_open()) {
-        try {
-            json data = json::parse(f);
-            if (data.contains("splash_banner") && data["splash_banner"].is_array()) {
-                splashBanner.clear();
-                for (const auto& line : data["splash_banner"]) {
-                    splashBanner.push_back(line.get<std::string>());
+    // Load assets from banners.txt
+    std::string bannersPath = "./data/banners.txt";
+    std::ifstream bf(bannersPath);
+    std::vector<std::vector<std::string>> allBanners;
+    if (bf.is_open()) {
+        std::string line;
+        std::vector<std::string> currentBanner;
+        while (std::getline(bf, line)) {
+            // Trim potential \r from Windows-style line endings
+            if (!line.empty() && line.back() == '\r') line.pop_back();
+            
+            if (line == "@@@") {
+                if (!currentBanner.empty()) {
+                    allBanners.push_back(currentBanner);
+                    currentBanner.clear();
                 }
+            } else {
+                currentBanner.push_back(line);
             }
-        } catch (...) { /* ignore */ }
+        }
+        if (!currentBanner.empty()) allBanners.push_back(currentBanner);
+        
+        if (!allBanners.empty()) {
+            int index = std::rand() % (int)allBanners.size();
+            splashBanner = allBanners[index];
+        }
+    }
+
+    // Fallback to assets.json if banners.txt was empty or missing
+    if (splashBanner.empty()) {
+        std::string assetPath = "./data/assets.json";
+        std::ifstream f(assetPath);
+        if (f.is_open()) {
+            try {
+                json data = json::parse(f);
+                if (data.contains("splash_banners") && data["splash_banners"].is_array()) {
+                    auto& banners = data["splash_banners"];
+                    if (!banners.empty()) {
+                        int index = std::rand() % (int)banners.size();
+                        auto& chosen = banners[index];
+                        for (const auto& line : chosen) {
+                            splashBanner.push_back(line.get<std::string>());
+                        }
+                    }
+                } else if (data.contains("splash_banner") && data["splash_banner"].is_array()) {
+                    for (const auto& line : data["splash_banner"]) {
+                        splashBanner.push_back(line.get<std::string>());
+                    }
+                }
+            } catch (...) { /* ignore */ }
+        }
     }
 
     header_win = std::make_unique<Window>(3, maxX, 0, 0);
