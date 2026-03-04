@@ -132,7 +132,7 @@ void Renderer::drawHeader(const Game& game) {
 
     // Decorative Metadata
     mvwprintw(win, 1, 2, "CONN: SECURE-AES-256");
-    mvwprintw(win, 1, 25, "LATENCY: %dms", (std::rand() % 10) + 5);
+    mvwprintw(win, 1, 25, "LATENCY: %.1lfms", game.lastdeltat * 1000);
     
     // CPU Load Bar
     mvwprintw(win, 1, 45, "CPU: [");

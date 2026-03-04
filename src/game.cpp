@@ -113,6 +113,7 @@ void Game::registerClick() {
 }
 
 void Game::updateTimers(double dt) {
+    this->lastdeltat = dt;
     if (this->feedbackTimer > 0) this->feedbackTimer -= dt;
     if (this->autosaveFeedbackTimer > 0) this->autosaveFeedbackTimer -= dt;
 
@@ -147,7 +148,7 @@ void Game::updateTimers(double dt) {
     }
 }
 
-void Game::saveGame() const {
+void Game::saveGame() {
     json save_data;
     save_data["version"] = VERSION;
     save_data["lines"] = this->lines;
@@ -171,6 +172,7 @@ void Game::saveGame() const {
         saveFile << save_data.dump(4);
         saveFile.close();
     }
+    addLog("SYSTEM: Saved state.");
 }
 
 void Game::loadGame() {

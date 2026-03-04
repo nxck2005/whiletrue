@@ -15,6 +15,7 @@ public:
     double lpsToClick;
     double clickBoostPercent;
     double lastClickValue;
+    double lastdeltat; // for rendering eye candy latency
     double feedbackTimer;
     double autosaveTimer;
     double autosaveFeedbackTimer;
@@ -42,7 +43,7 @@ public:
     void runCycle(double deltat);
     void registerClick();
     void updateTimers(double dt);
-    void saveGame() const;
+    void saveGame();
     void loadGame();
     void catchCache();
     void addLog(const std::string& msg);
