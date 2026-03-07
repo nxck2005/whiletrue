@@ -5,6 +5,7 @@
 #include "constants.hpp"
 
 struct Building {
+    int id;
     std::string name;
     double basecost;
     double baselps;

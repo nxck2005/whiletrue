@@ -289,11 +289,11 @@ void Renderer::drawShop(const Game& game) {
         if (isSelected) wattron(win, A_BOLD);
 
         if (isSelected) {
-            mvwprintw(win, y_pos, 2, "[%zu] [[ %-10s ]] (Owned: %d)", 
-                     (size_t)i, game.buildings[i].name.c_str(), game.buildings[i].count);
+            mvwprintw(win, y_pos, 2, "[%d] [[ %-10s ]] (Owned: %d)", 
+                     game.buildings[i].id, game.buildings[i].name.c_str(), game.buildings[i].count);
         } else {
-            mvwprintw(win, y_pos, 2, "[%zu]    %-10s    (Owned: %d)", 
-                     (size_t)i, game.buildings[i].name.c_str(), game.buildings[i].count);
+            mvwprintw(win, y_pos, 2, "[%d]    %-10s    (Owned: %d)", 
+                     game.buildings[i].id, game.buildings[i].name.c_str(), game.buildings[i].count);
         }
 
         mvwprintw(win, y_pos + 1, 6, "+%s D/s  |", Utils::formatNumber(game.buildings[i].baselps).c_str());

@@ -26,6 +26,7 @@ void Game::loadBuildings() {
             this->buildings.clear();
             for (const auto& item : data) {
                 this->buildings.push_back({
+                    item.at("id").get<int>(),
                     item.at("name").get<std::string>(),
                     item.at("basecost").get<double>(),
                     item.at("baselps").get<double>(),
@@ -39,7 +40,7 @@ void Game::loadBuildings() {
     
     // Fallback if file not found or empty
     if (this->buildings.empty()) {
-        buildings.push_back({"BUILDING LOAD ERROR", 404, 0.1, 0});
+        buildings.push_back({0, "BUILDING LOAD ERROR", 404, 0.1, 0});
     }
 
     this->numBuildings = buildings.size();
@@ -162,7 +163,7 @@ void Game::saveGame() {
     json buildings_data = json::array();
     for (const auto& b : this->buildings) {
         buildings_data.push_back({
-            {"name", b.name},
+            {"id", b.id},
             {"count", b.count}
         });
     }
@@ -198,11 +199,11 @@ void Game::loadGame() {
 
         if (save_data.contains("buildings") && save_data["buildings"].is_array()) {
             for (const auto& b_data : save_data["buildings"]) {
-                std::string name = b_data.value("name", "");
+                int id = b_data.value("id", -1);
                 int count = b_data.value("count", 0);
 
                 for (auto& b : this->buildings) {
-                    if (b.name == name) {
+                    if (b.id == id) {
                         b.count = count;
                         break;
                     }
