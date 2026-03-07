@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <random>
-#include "json.hpp"
+#include <json.hpp>
 #include "utils.hpp"
 
 using json = nlohmann::json;

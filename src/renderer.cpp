@@ -1,6 +1,6 @@
 #include "renderer.hpp"
 #include "utils.hpp"
-#include "json.hpp"
+#include <json.hpp>
 #include <fstream>
 #include <clocale>
 #include <cstdlib>

@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++23 -Wall -Wextra -O3
+CXXFLAGS = -std=c++23 -Wall -Wextra -O3 -Iinclude
 LDFLAGS = -lncursesw -lpthread
 
 # Installation paths
