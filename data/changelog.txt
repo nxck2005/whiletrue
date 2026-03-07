@@ -6,3 +6,5 @@ version 2:
     -- buy and install softwares to buff production from quickhacks and get global multipliers
 - quickhacks list now reflects data/sec after applying all bought multipliers
 - added id's to quickhacks
+- you can now reset your save by holding down r. there will be a progress meter that shows up, and after it's done, your save is reset
+- various performance improvements (multiplier caching etc.)
