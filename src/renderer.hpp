@@ -15,8 +15,8 @@ public:
     void render(const Game& game);
     void handleResize();
     void moveSelection(int dir, int max, Shop tab);
-    int getSelectedIndex() const { return selectedBuildingIndex; }
-    int getSelectedUpgradeIndex() const { return selectedUpgradeIndex; }
+    int getSelectedIndex() const;
+    int getSelectedUpgradeIndex(const Game& game) const;
     void drawSplashScreen();
 
 private:

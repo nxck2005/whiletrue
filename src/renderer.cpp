@@ -83,6 +83,17 @@ Renderer::Renderer() {
     shop_win   = std::make_unique<Window>(maxY - 3, maxX - (maxX / 2), 3, maxX / 2);
 }
 
+int Renderer::getSelectedIndex() const {
+    return selectedBuildingIndex;
+}
+
+int Renderer::getSelectedUpgradeIndex(const Game& game) const {
+    if (selectedUpgradeIndex >= 0 && selectedUpgradeIndex < (int)game.visibleUpgradeIndices.size()) {
+        return game.visibleUpgradeIndices[selectedUpgradeIndex];
+    }
+    return -1;
+}
+
 void Renderer::drawSplashScreen() {
     bool waiting = true;
     nodelay(stdscr, FALSE);
@@ -334,8 +345,17 @@ void Renderer::drawBuildings(const Game& game, WINDOW* win, int winHeight, int w
 }
 
 void Renderer::drawUpgrades(const Game& game, WINDOW* win, int winHeight, int winWidth) {
-    int displayableCount = (winHeight - 6) / 3; // Upgrades take 3 lines (Name, Desc, Cost)
+    if (game.visibleUpgradeIndices.empty()) {
+        mvwprintw(win, 5, 2, "No software modules found yet.");
+        return;
+    }
+
+    int displayableCount = (winHeight - 6) / 3;
     if (displayableCount < 1) displayableCount = 1;
+
+    if (selectedUpgradeIndex < 0) selectedUpgradeIndex = 0;
+    if (selectedUpgradeIndex >= (int)game.visibleUpgradeIndices.size()) 
+        selectedUpgradeIndex = (int)game.visibleUpgradeIndices.size() - 1;
 
     static int scrollOffset = 0;
     if (selectedUpgradeIndex < scrollOffset) {
@@ -345,13 +365,15 @@ void Renderer::drawUpgrades(const Game& game, WINDOW* win, int winHeight, int wi
     }
 
     int endIndex = scrollOffset + displayableCount;
-    if (endIndex > (int)game.upgrades.size()) endIndex = game.upgrades.size();
+    if (endIndex > (int)game.visibleUpgradeIndices.size()) 
+        endIndex = (int)game.visibleUpgradeIndices.size();
 
     for (int i = scrollOffset; i < endIndex; i++) {
         int relativeIdx = i - scrollOffset;
         int y_pos = 5 + (relativeIdx * 3);
 
-        const auto& u = game.upgrades[i];
+        int actualIdx = game.visibleUpgradeIndices[i];
+        const auto& u = game.upgrades[actualIdx];
         bool isSelected = (i == selectedUpgradeIndex);
         
         if (isSelected) wattron(win, A_BOLD);
@@ -382,5 +404,5 @@ void Renderer::drawUpgrades(const Game& game, WINDOW* win, int winHeight, int wi
         if (isSelected) wattroff(win, A_BOLD);
     }
     if (scrollOffset > 0) mvwprintw(win, 4, winWidth - 3, "^");
-    if (endIndex < (int)game.upgrades.size()) mvwprintw(win, winHeight - 2, winWidth - 3, "v");
+    if (endIndex < (int)game.visibleUpgradeIndices.size()) mvwprintw(win, winHeight - 2, winWidth - 3, "v");
 }

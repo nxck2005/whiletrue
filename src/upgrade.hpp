@@ -9,6 +9,9 @@ struct Upgrade {
     std::string desc;
     double cost;
     bool purchased = false;
+    bool visible = false;
+    bool alwaysVisible = false;
+    double globalMultiplier = 1.0;
 
     // Building ID -> Required Count
     std::unordered_map<int, int> neededCountsBuildings;

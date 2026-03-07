@@ -2,9 +2,10 @@
   {
     "id": 0,
     "name": "Optimized Handshake",
-    "desc": "Improves Ping response. x2 Ping output.",
+    "desc": "Improves Ping response by x2. Needs 5 Pings.",
     "cost": 200,
-    "neededCountsBuildings": { "0": 10 },
+    "alwaysVisible": false,
+    "neededCountsBuildings": { "0": 5 },
     "resultantBuffs": { "0": 2.0 }
   },
   {
@@ -12,15 +13,35 @@
     "name": "Neural Overclock",
     "desc": "Boosts Neural Link efficiency. x2 Link output.",
     "cost": 1500,
-    "neededCountsBuildings": { "1": 25 },
+    "alwaysVisible": false,
+    "neededCountsBuildings": { "1": 15 },
     "resultantBuffs": { "1": 2.0 }
   },
   {
     "id": 2,
     "name": "Distributed Sync",
-    "desc": "Synergy between Pings and Links. x2 output for both.",
+    "desc": "Synergy between Pings and Links. x1.5 output for both.",
     "cost": 5000,
-    "neededCountsBuildings": { "0": 50, "1": 50 },
+    "alwaysVisible": false,
+    "neededCountsBuildings": { "0": 25, "1": 25 },
     "resultantBuffs": { "0": 1.5, "1": 1.5 }
+  },
+  {
+    "id": 3,
+    "name": "Legacy Driver",
+    "desc": "Legacy drivers for old hardware. (1.1x DATA/SEC)",
+    "cost": 50,
+    "alwaysVisible": true,
+    "neededCountsBuildings": {},
+    "resultantBuffs": { "0": 1.1 }
+  },
+  {
+    "id": 4,
+    "name": "Mainframe Patch",
+    "desc": "Global optimization patch. (1.2x DATA/SEC)",
+    "cost": 10000,
+    "alwaysVisible": true,
+    "neededCountsBuildings": {},
+    "globalMultiplier": 1.2
   }
 ]

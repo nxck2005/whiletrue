@@ -68,19 +68,19 @@ int main() {
                     if (game.selectedShop == Shop::BUILDINGS)
                         renderer.moveSelection(-1, game.buildings.size(), game.selectedShop);
                     else
-                        renderer.moveSelection(-1, game.upgrades.size(), game.selectedShop);
+                        renderer.moveSelection(-1, game.getVisibleUpgradesCount(), game.selectedShop);
                     break;
                 case GameAction::MOVE_DOWN:
                     if (game.selectedShop == Shop::BUILDINGS)
                         renderer.moveSelection(1, game.buildings.size(), game.selectedShop);
                     else
-                        renderer.moveSelection(1, game.upgrades.size(), game.selectedShop);
+                        renderer.moveSelection(1, game.getVisibleUpgradesCount(), game.selectedShop);
                     break;
                 case GameAction::BUY_SELECTED:
                     if (game.selectedShop == Shop::BUILDINGS)
                         game.buyBuilding(renderer.getSelectedIndex());
                     else
-                        game.buyUpgrade(renderer.getSelectedUpgradeIndex());
+                        game.buyUpgrade(renderer.getSelectedUpgradeIndex(game));
                     break;
                 case GameAction::NONE:
                 default:

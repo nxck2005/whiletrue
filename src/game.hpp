@@ -36,6 +36,7 @@ public:
 
     std::vector<Building> buildings;
     std::vector<Upgrade> upgrades;
+    std::vector<int> visibleUpgradeIndices;
     int numBuildings;
     Shop selectedShop;
 
@@ -44,9 +45,11 @@ public:
     void loadBuildings();
     void loadUpgrades();
     void updateLPS();
+    void updateVisibility();
     void buyBuilding(int index);
-    void buyUpgrade(int id);
+    void buyUpgrade(int index);
     void cycleShop();
+    int getVisibleUpgradesCount() const;
     double getBuffCost() const;
     double getClickShareCost() const;
     void buyBuff();

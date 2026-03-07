@@ -16,7 +16,40 @@ Game::Game(double lps, double b)
     
     loadBuildings();
     loadUpgrades();
+    updateVisibility();
     this->cacheSpawnTimer = std::rand() % 300;
+}
+
+void Game::updateVisibility() {
+    for (int i = 0; i < (int)this->upgrades.size(); i++) {
+        auto& u = this->upgrades[i];
+        if (!u.visible) {
+            bool met = true;
+            for (const auto& req : u.neededCountsBuildings) {
+                bool foundReq = false;
+                for (const auto& build : this->buildings) {
+                    if (build.id == req.first && build.count >= req.second) {
+                        foundReq = true;
+                        break;
+                    }
+                }
+                if (!foundReq) {
+                    met = false;
+                    break;
+                }
+            }
+            if (met) {
+                u.visible = true;
+            }
+        }
+    }
+
+    this->visibleUpgradeIndices.clear();
+    for (int i = 0; i < (int)this->upgrades.size(); i++) {
+        if (this->upgrades[i].visible) {
+            this->visibleUpgradeIndices.push_back(i);
+        }
+    }
 }
 
 void Game::cycleShop() {
@@ -27,6 +60,10 @@ void Game::cycleShop() {
         selectedShop = Shop::BUILDINGS;
         addLog("UI: Switched to BLACK MARKET");
     }
+}
+
+int Game::getVisibleUpgradesCount() const {
+    return (int)this->visibleUpgradeIndices.size();
 }
 
 void Game::loadBuildings() {
@@ -72,6 +109,9 @@ void Game::loadUpgrades() {
                 u.desc = item.at("desc").get<std::string>();
                 u.cost = item.at("cost").get<double>();
                 u.purchased = false;
+                u.alwaysVisible = item.value("alwaysVisible", false);
+                u.visible = u.alwaysVisible;
+                u.globalMultiplier = item.value("globalMultiplier", 1.0);
 
                 if (item.contains("neededCountsBuildings")) {
                     for (auto& el : item["neededCountsBuildings"].items()) {
@@ -98,21 +138,30 @@ void Game::updateLPS() {
     
     // Calculate LPS for each building
     for (const auto& b : this->buildings) {
-        double multiplier = 1.0;
+        double buildingMultiplier = 1.0;
         
-        // Apply multipliers from purchased upgrades
+        // Apply multipliers from purchased upgrades for specific buildings
         for (const auto& u : this->upgrades) {
             if (u.purchased) {
                 auto it = u.resultantBuffs.find(b.id);
                 if (it != u.resultantBuffs.end()) {
-                    multiplier *= it->second;
+                    buildingMultiplier *= it->second;
                 }
             }
         }
         
-        newlps += (b.baselps * multiplier) * b.count;
+        newlps += (b.baselps * buildingMultiplier) * b.count;
     }
-    this->linesPerSecond = newlps;
+
+    // Apply global multipliers from purchased upgrades
+    double totalGlobalMultiplier = 1.0;
+    for (const auto& u : this->upgrades) {
+        if (u.purchased) {
+            totalGlobalMultiplier *= u.globalMultiplier;
+        }
+    }
+
+    this->linesPerSecond = newlps * totalGlobalMultiplier;
 }
 
 void Game::buyBuilding(int index) {
@@ -124,14 +173,15 @@ void Game::buyBuilding(int index) {
         this->buildings[index].count++;
         this->lines -= cost;
         addLog("SYSTEM: Purchased [" + buildings[index].name + "]");
+        updateVisibility();
         updateLPS();
     }
 }
 
-void Game::buyUpgrade(int index) {
-    if (index < 0 || index >= (int)upgrades.size()) return;
-    
-    Upgrade& u = upgrades[index];
+void Game::buyUpgrade(int actualIndex) {
+    if (actualIndex < 0 || actualIndex >= (int)upgrades.size()) return;
+
+    Upgrade& u = upgrades[actualIndex];
     if (u.purchased) return;
 
     // Check cost
@@ -260,8 +310,12 @@ void Game::saveGame() {
 
     json upgrades_data = json::array();
     for (const auto& u : this->upgrades) {
-        if (u.purchased) {
-            upgrades_data.push_back(u.id);
+        if (u.purchased || u.visible) {
+            upgrades_data.push_back({
+                {"id", u.id},
+                {"purchased", u.purchased},
+                {"visible", u.visible}
+            });
         }
     }
     save_data["upgrades"] = upgrades_data;
@@ -309,18 +363,33 @@ void Game::loadGame() {
         }
 
         if (save_data.contains("upgrades") && save_data["upgrades"].is_array()) {
-            for (const auto& u_id : save_data["upgrades"]) {
-                int id = u_id.get<int>();
-                for (auto& u : this->upgrades) {
-                    if (u.id == id) {
-                        u.purchased = true;
-                        break;
+            for (const auto& u_entry : save_data["upgrades"]) {
+                if (u_entry.is_number()) {
+                    int id = u_entry.get<int>();
+                    for (auto& u : this->upgrades) {
+                        if (u.id == id) {
+                            u.purchased = true;
+                            u.visible = true;
+                            break;
+                        }
+                    }
+                } else if (u_entry.is_object()) {
+                    int id = u_entry.value("id", -1);
+                    bool purchased = u_entry.value("purchased", false);
+                    bool visible = u_entry.value("visible", false);
+                    for (auto& u : this->upgrades) {
+                        if (u.id == id) {
+                            u.purchased = purchased;
+                            u.visible = visible || u.alwaysVisible;
+                            break;
+                        }
                     }
                 }
             }
         }
 
         addLog("SYSTEM: State recovered. Ver " + std::to_string(savedver));
+        updateVisibility();
         updateLPS();
     } catch (const std::exception& e) {
         addLog("SYSTEM ERROR: Save data corrupted.");
