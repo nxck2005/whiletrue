@@ -4,7 +4,13 @@
 #include <string>
 #include <deque>
 #include "building.hpp"
+#include "upgrade.hpp"
 #include "constants.hpp"
+
+enum class Shop {
+    BUILDINGS,
+    UPGRADES
+};
 
 class Game {
 public:
@@ -29,13 +35,18 @@ public:
     std::deque<std::string> actionLog;
 
     std::vector<Building> buildings;
+    std::vector<Upgrade> upgrades;
     int numBuildings;
+    Shop selectedShop;
 
     Game(double lps, double b);
 
     void loadBuildings();
+    void loadUpgrades();
     void updateLPS();
     void buyBuilding(int index);
+    void buyUpgrade(int id);
+    void cycleShop();
     double getBuffCost() const;
     double getClickShareCost() const;
     void buyBuff();

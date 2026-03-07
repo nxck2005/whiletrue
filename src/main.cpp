@@ -61,14 +61,26 @@ int main() {
                 case GameAction::RESIZE:
                     renderer.handleResize();
                     break;
+                case GameAction::CYCLE_SHOP:
+                    game.cycleShop();
+                    break;
                 case GameAction::MOVE_UP:
-                    renderer.moveSelection(-1, game.buildings.size());
+                    if (game.selectedShop == Shop::BUILDINGS)
+                        renderer.moveSelection(-1, game.buildings.size(), game.selectedShop);
+                    else
+                        renderer.moveSelection(-1, game.upgrades.size(), game.selectedShop);
                     break;
                 case GameAction::MOVE_DOWN:
-                    renderer.moveSelection(1, game.buildings.size());
+                    if (game.selectedShop == Shop::BUILDINGS)
+                        renderer.moveSelection(1, game.buildings.size(), game.selectedShop);
+                    else
+                        renderer.moveSelection(1, game.upgrades.size(), game.selectedShop);
                     break;
                 case GameAction::BUY_SELECTED:
-                    game.buyBuilding(renderer.getSelectedIndex());
+                    if (game.selectedShop == Shop::BUILDINGS)
+                        game.buyBuilding(renderer.getSelectedIndex());
+                    else
+                        game.buyUpgrade(renderer.getSelectedUpgradeIndex());
                     break;
                 case GameAction::NONE:
                 default:

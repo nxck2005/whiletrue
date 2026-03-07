@@ -11,10 +11,22 @@ Game::Game(double lps, double b)
     : linesPerSecond(lps), lines(0), buffs(b), baseClickAmt(1.0),
       lpsToClick(0), clickBoostPercent(1.0), lastClickValue(0), feedbackTimer(0),
       autosaveTimer(0), autosaveFeedbackTimer(0), buffsBought(0), clickSharesBought(0),
-      cacheActiveTimer(0), cacheBuffDurationTimer(0), cacheOnScreen(false), activeAlert("") {
+      cacheActiveTimer(0), cacheBuffDurationTimer(0), cacheOnScreen(false), activeAlert(""),
+      selectedShop(Shop::BUILDINGS) {
     
     loadBuildings();
+    loadUpgrades();
     this->cacheSpawnTimer = std::rand() % 300;
+}
+
+void Game::cycleShop() {
+    if (selectedShop == Shop::BUILDINGS) {
+        selectedShop = Shop::UPGRADES;
+        addLog("UI: Switched to SOFTWARE SUITE");
+    } else {
+        selectedShop = Shop::BUILDINGS;
+        addLog("UI: Switched to BLACK MARKET");
+    }
 }
 
 void Game::loadBuildings() {
@@ -46,16 +58,65 @@ void Game::loadBuildings() {
     this->numBuildings = buildings.size();
 }
 
+void Game::loadUpgrades() {
+    std::string path = Utils::getDataPath("upgrades.json");
+    std::ifstream f(path);
+    if (f.is_open()) {
+        try {
+            json data = json::parse(f);
+            this->upgrades.clear();
+            for (const auto& item : data) {
+                Upgrade u;
+                u.id = item.at("id").get<int>();
+                u.name = item.at("name").get<std::string>();
+                u.desc = item.at("desc").get<std::string>();
+                u.cost = item.at("cost").get<double>();
+                u.purchased = false;
+
+                if (item.contains("neededCountsBuildings")) {
+                    for (auto& el : item["neededCountsBuildings"].items()) {
+                        u.neededCountsBuildings[std::stoi(el.key())] = el.value().get<int>();
+                    }
+                }
+
+                if (item.contains("resultantBuffs")) {
+                    for (auto& el : item["resultantBuffs"].items()) {
+                        u.resultantBuffs[std::stoi(el.key())] = el.value().get<double>();
+                    }
+                }
+
+                this->upgrades.push_back(u);
+            }
+        } catch (const std::exception& e) {
+            // ignore
+        }
+    }
+}
+
 void Game::updateLPS() {
     double newlps = 0;
+    
+    // Calculate LPS for each building
     for (const auto& b : this->buildings) {
-        newlps += b.baselps * b.count;
+        double multiplier = 1.0;
+        
+        // Apply multipliers from purchased upgrades
+        for (const auto& u : this->upgrades) {
+            if (u.purchased) {
+                auto it = u.resultantBuffs.find(b.id);
+                if (it != u.resultantBuffs.end()) {
+                    multiplier *= it->second;
+                }
+            }
+        }
+        
+        newlps += (b.baselps * multiplier) * b.count;
     }
     this->linesPerSecond = newlps;
 }
 
 void Game::buyBuilding(int index) {
-    if (index >= numBuildings) {
+    if (index < 0 || index >= numBuildings) {
         return;
     }
     double cost = buildings[index].getNextCost();
@@ -65,6 +126,34 @@ void Game::buyBuilding(int index) {
         addLog("SYSTEM: Purchased [" + buildings[index].name + "]");
         updateLPS();
     }
+}
+
+void Game::buyUpgrade(int index) {
+    if (index < 0 || index >= (int)upgrades.size()) return;
+    
+    Upgrade& u = upgrades[index];
+    if (u.purchased) return;
+
+    // Check cost
+    if (this->lines < u.cost) return;
+
+    // Check requirements
+    for (const auto& req : u.neededCountsBuildings) {
+        bool met = false;
+        for (const auto& b : this->buildings) {
+            if (b.id == req.first && b.count >= req.second) {
+                met = true;
+                break;
+            }
+        }
+        if (!met) return;
+    }
+
+    // Purchase
+    this->lines -= u.cost;
+    u.purchased = true;
+    addLog("SOFTWARE: Installed [" + u.name + "]");
+    updateLPS();
 }
 
 double Game::getBuffCost() const {
@@ -169,6 +258,14 @@ void Game::saveGame() {
     }
     save_data["buildings"] = buildings_data;
 
+    json upgrades_data = json::array();
+    for (const auto& u : this->upgrades) {
+        if (u.purchased) {
+            upgrades_data.push_back(u.id);
+        }
+    }
+    save_data["upgrades"] = upgrades_data;
+
     std::ofstream saveFile(Utils::getSavePath());
     if (saveFile.is_open()) {
         saveFile << save_data.dump(4);
@@ -205,6 +302,18 @@ void Game::loadGame() {
                 for (auto& b : this->buildings) {
                     if (b.id == id) {
                         b.count = count;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (save_data.contains("upgrades") && save_data["upgrades"].is_array()) {
+            for (const auto& u_id : save_data["upgrades"]) {
+                int id = u_id.get<int>();
+                for (auto& u : this->upgrades) {
+                    if (u.id == id) {
+                        u.purchased = true;
                         break;
                     }
                 }

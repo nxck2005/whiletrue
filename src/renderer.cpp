@@ -245,32 +245,49 @@ void Renderer::drawStats(const Game& game) {
     }
 }
 
-void Renderer::moveSelection(int dir, int max) {
-    selectedBuildingIndex += dir;
-    if (selectedBuildingIndex < 0) selectedBuildingIndex = 0;
-    if (selectedBuildingIndex >= max) selectedBuildingIndex = max - 1;
+void Renderer::moveSelection(int dir, int max, Shop tab) {
+    if (tab == Shop::BUILDINGS) {
+        selectedBuildingIndex += dir;
+        if (selectedBuildingIndex < 0) selectedBuildingIndex = 0;
+        if (selectedBuildingIndex >= max) selectedBuildingIndex = max - 1;
+    } else {
+        selectedUpgradeIndex += dir;
+        if (selectedUpgradeIndex < 0) selectedUpgradeIndex = 0;
+        if (selectedUpgradeIndex >= max) selectedUpgradeIndex = max - 1;
+    }
 }
 
 void Renderer::drawShop(const Game& game) {
     WINDOW* win = shop_win->get();
-    wattron(win, COLOR_PAIR(3) | A_BOLD);
-    mvwprintw(win, 0, 2, " [ BLACK MARKET ] ");
-    wattroff(win, COLOR_PAIR(3) | A_BOLD);
-
-    wattron(win, A_BOLD);
-    mvwprintw(win, 2, 2, "QUICKHACKS");
-    mvwprintw(win, 3, 2, "------------------------------------------");
-    wattroff(win, A_BOLD);
-
-    // Calculate how many items can be displayed
-    // Start at y=5, each item is 2 lines. Box and title use some space.
     int winHeight, winWidth;
     getmaxyx(win, winHeight, winWidth);
-    (void)winWidth;
+
+    wattron(win, COLOR_PAIR(3) | A_BOLD);
+    mvwprintw(win, 0, 2, " [ SHOP ] ");
+    wattroff(win, COLOR_PAIR(3) | A_BOLD);
+
+    // Tab Headers
+    if (game.selectedShop == Shop::BUILDINGS) wattron(win, A_REVERSE | A_BOLD);
+    mvwprintw(win, 2, 2, " BUILDINGS ");
+    if (game.selectedShop == Shop::BUILDINGS) wattroff(win, A_REVERSE | A_BOLD);
+
+    if (game.selectedShop == Shop::UPGRADES) wattron(win, A_REVERSE | A_BOLD);
+    mvwprintw(win, 2, 20, " SOFTWARE ");
+    if (game.selectedShop == Shop::UPGRADES) wattroff(win, A_REVERSE | A_BOLD);
+
+    mvwprintw(win, 3, 2, "------------------------------------------");
+
+    if (game.selectedShop == Shop::BUILDINGS) {
+        drawBuildings(game, win, winHeight, winWidth);
+    } else {
+        drawUpgrades(game, win, winHeight, winWidth);
+    }
+}
+
+void Renderer::drawBuildings(const Game& game, WINDOW* win, int winHeight, int winWidth) {
     int displayableCount = (winHeight - 6) / 2;
     if (displayableCount < 1) displayableCount = 1;
 
-    // Static scrolling offset calculation to keep selection in view
     static int scrollOffset = 0;
     if (selectedBuildingIndex < scrollOffset) {
         scrollOffset = selectedBuildingIndex;
@@ -314,4 +331,56 @@ void Renderer::drawShop(const Game& game) {
     }
     if (scrollOffset > 0) mvwprintw(win, 4, winWidth - 3, "^");
     if (endIndex < (int)game.buildings.size()) mvwprintw(win, winHeight - 2, winWidth - 3, "v");
+}
+
+void Renderer::drawUpgrades(const Game& game, WINDOW* win, int winHeight, int winWidth) {
+    int displayableCount = (winHeight - 6) / 3; // Upgrades take 3 lines (Name, Desc, Cost)
+    if (displayableCount < 1) displayableCount = 1;
+
+    static int scrollOffset = 0;
+    if (selectedUpgradeIndex < scrollOffset) {
+        scrollOffset = selectedUpgradeIndex;
+    } else if (selectedUpgradeIndex >= scrollOffset + displayableCount) {
+        scrollOffset = selectedUpgradeIndex - displayableCount + 1;
+    }
+
+    int endIndex = scrollOffset + displayableCount;
+    if (endIndex > (int)game.upgrades.size()) endIndex = game.upgrades.size();
+
+    for (int i = scrollOffset; i < endIndex; i++) {
+        int relativeIdx = i - scrollOffset;
+        int y_pos = 5 + (relativeIdx * 3);
+
+        const auto& u = game.upgrades[i];
+        bool isSelected = (i == selectedUpgradeIndex);
+        
+        if (isSelected) wattron(win, A_BOLD);
+        
+        if (u.purchased) wattron(win, COLOR_PAIR(1));
+
+        if (isSelected) {
+            mvwprintw(win, y_pos, 2, "[[ %s ]] %s", u.name.c_str(), u.purchased ? "[INSTALLED]" : "");
+        } else {
+            mvwprintw(win, y_pos, 2, "   %s    %s", u.name.c_str(), u.purchased ? "[INSTALLED]" : "");
+        }
+        
+        if (u.purchased) wattroff(win, COLOR_PAIR(1));
+
+        wattron(win, A_DIM);
+        mvwprintw(win, y_pos + 1, 4, "%s", u.desc.c_str());
+        wattroff(win, A_DIM);
+
+        if (!u.purchased) {
+            if (game.lines >= u.cost) wattron(win, COLOR_PAIR(1));
+            else wattron(win, COLOR_PAIR(2));
+            mvwprintw(win, y_pos + 2, 4, "Cost: %s DATA", Utils::formatNumber(u.cost).c_str());
+            wattroff(win, COLOR_PAIR(1)); wattroff(win, COLOR_PAIR(2));
+        } else {
+            mvwprintw(win, y_pos + 2, 4, "STATUS: Active");
+        }
+
+        if (isSelected) wattroff(win, A_BOLD);
+    }
+    if (scrollOffset > 0) mvwprintw(win, 4, winWidth - 3, "^");
+    if (endIndex < (int)game.upgrades.size()) mvwprintw(win, winHeight - 2, winWidth - 3, "v");
 }

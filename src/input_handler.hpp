@@ -1,9 +1,9 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 
 enum class GameAction {
-    NONE,
+    QUIT,
     BREACH,
     BUY_BUFF,
     BUY_CLICK_SHARE,
@@ -14,19 +14,20 @@ enum class GameAction {
     MOVE_UP,
     MOVE_DOWN,
     BUY_SELECTED,
-    QUIT
+    CYCLE_SHOP,
+    NONE
 };
 
 struct Command {
     GameAction action;
-    int index; // Still useful if we want to pass context about a building
+    int index; 
 };
 
 class InputHandler {
-    public:
-        InputHandler();
-        Command handleInput(int ch) const;
+public:
+    InputHandler();
+    Command handleInput(int ch) const;
 
-    private:
-        std::map<int, GameAction> keyMap;
+private:
+    std::unordered_map<int, GameAction> keyMap;
 };

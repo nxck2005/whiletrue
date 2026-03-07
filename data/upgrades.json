@@ -1,0 +1,26 @@
+[
+  {
+    "id": 0,
+    "name": "Optimized Handshake",
+    "desc": "Improves Ping response. x2 Ping output.",
+    "cost": 200,
+    "neededCountsBuildings": { "0": 10 },
+    "resultantBuffs": { "0": 2.0 }
+  },
+  {
+    "id": 1,
+    "name": "Neural Overclock",
+    "desc": "Boosts Neural Link efficiency. x2 Link output.",
+    "cost": 1500,
+    "neededCountsBuildings": { "1": 25 },
+    "resultantBuffs": { "1": 2.0 }
+  },
+  {
+    "id": 2,
+    "name": "Distributed Sync",
+    "desc": "Synergy between Pings and Links. x2 output for both.",
+    "cost": 5000,
+    "neededCountsBuildings": { "0": 50, "1": 50 },
+    "resultantBuffs": { "0": 1.5, "1": 1.5 }
+  }
+]

@@ -16,6 +16,7 @@ InputHandler::InputHandler() {
     keyMap[KEY_DOWN] = GameAction::MOVE_DOWN;
     keyMap['\n'] = GameAction::BUY_SELECTED;
     keyMap[KEY_ENTER] = GameAction::BUY_SELECTED;
+    keyMap['\t'] = GameAction::CYCLE_SHOP;
 }
 
 Command InputHandler::handleInput(int ch) const {
