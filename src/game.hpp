@@ -6,11 +6,7 @@
 #include "building.hpp"
 #include "upgrade.hpp"
 #include "constants.hpp"
-
-enum class Shop {
-    BUILDINGS,
-    UPGRADES
-};
+#include "shop.hpp"
 
 class Game {
 public:

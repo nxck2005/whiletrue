@@ -6,6 +6,7 @@
 #include <string>
 #include "game.hpp"
 #include "window.hpp"
+#include "shop.hpp"
 
 class Renderer {
 public:
