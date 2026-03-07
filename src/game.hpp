@@ -19,6 +19,9 @@ public:
     double lastClickValue;
     double lastdeltat; // for rendering eye candy latency
     double feedbackTimer;
+    double resetTimer;      // Progress of hard reset
+    bool isResetting;       // Whether 'r' is being held
+    double lastResetKeyPressTime; // Time since last 'r' char was received
     double autosaveTimer;
     double autosaveFeedbackTimer;
     int buffsBought;
@@ -33,6 +36,14 @@ public:
     std::vector<Building> buildings;
     std::vector<Upgrade> upgrades;
     std::vector<int> visibleUpgradeIndices;
+    
+    // Multiplier Cache: Stores pre-calculated production multipliers for each building.
+    // This avoids O(N) upgrade-list iterations every frame during LPS calculation.
+    std::vector<double> cachedBuildingMultipliers; 
+
+    // Global Multiplier Cache: Stores the product of all purchased global software buffs.
+    double cachedGlobalMultiplier;                  
+    
     int numBuildings;
     Shop selectedShop;
 
@@ -42,6 +53,11 @@ public:
     void loadUpgrades();
     void updateLPS();
     void updateVisibility();
+
+    // Recalculates the production multipliers for all buildings and the global buff.
+    // Should be called whenever a new upgrade is purchased or the game is loaded.
+    void recalculateMultipliers(); 
+    
     void buyBuilding(int index);
     void buyUpgrade(int index);
     void cycleShop();
@@ -56,6 +72,7 @@ public:
     void updateTimers(double dt);
     void saveGame();
     void loadGame();
+    void hardReset(); // New Method
     void catchCache();
     void addLog(const std::string& msg);
 };

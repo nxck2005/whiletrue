@@ -208,6 +208,19 @@ void Renderer::drawHeader(const Game& game) {
         wattroff(win, COLOR_PAIR(1) | A_BOLD);
     }
 
+    if (game.resetTimer > 0) {
+        wattron(win, COLOR_PAIR(2) | A_BOLD | A_BLINK);
+        int barWidth = 20;
+        int progress = (int)((game.resetTimer / 5.0) * barWidth);
+        mvwprintw(win, 1, (maxX / 2) - 15, "ERASING SYSTEM: [");
+        for (int i = 0; i < barWidth; i++) {
+            if (i < progress) waddch(win, '#' | COLOR_PAIR(2));
+            else waddch(win, '.' | A_DIM);
+        }
+        waddch(win, ']');
+        wattroff(win, COLOR_PAIR(2) | A_BOLD | A_BLINK);
+    }
+
     if (game.cacheOnScreen) {
         wattron(win, COLOR_PAIR(3) | A_BLINK | A_BOLD);
         mvwprintw(win, 2, maxX - 65, " [!] ANOMALOUS SIGNAL DETECTED - PRESS 'g' TO INTERCEPT [!] ");

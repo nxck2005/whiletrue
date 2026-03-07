@@ -40,6 +40,10 @@ int main() {
                 case GameAction::QUIT:
                     keep_running = false;
                     break;
+                case GameAction::RESET_PRESS:
+                    game.isResetting = true;
+                    game.lastResetKeyPressTime = 0; // Reset the cooldown
+                    break;
                 case GameAction::BREACH:
                     game.registerClick();
                     break;

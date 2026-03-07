@@ -10,14 +10,65 @@ using json = nlohmann::json;
 Game::Game(double lps, double b) 
     : linesPerSecond(lps), lines(0), buffs(b), baseClickAmt(1.0),
       lpsToClick(0), clickBoostPercent(1.0), lastClickValue(0), feedbackTimer(0),
+      resetTimer(0), isResetting(false), lastResetKeyPressTime(0),
       autosaveTimer(0), autosaveFeedbackTimer(0), buffsBought(0), clickSharesBought(0),
       cacheActiveTimer(0), cacheBuffDurationTimer(0), cacheOnScreen(false), activeAlert(""),
-      selectedShop(Shop::BUILDINGS) {
+      cachedGlobalMultiplier(1.0), selectedShop(Shop::BUILDINGS) {
     
     loadBuildings();
     loadUpgrades();
+    recalculateMultipliers();
     updateVisibility();
     this->cacheSpawnTimer = std::rand() % 300;
+}
+
+void Game::hardReset() {
+    this->lines = 0;
+    this->buffs = 1.0;
+    this->linesPerSecond = 0;
+    this->buffsBought = 0;
+    this->clickSharesBought = 0;
+    this->lpsToClick = 0;
+    this->clickBoostPercent = 1.0;
+    
+    for (auto& b : this->buildings) {
+        b.count = 0;
+    }
+    
+    for (auto& u : this->upgrades) {
+        u.purchased = false;
+        u.visible = u.alwaysVisible;
+    }
+    
+    this->actionLog.clear();
+    addLog("--- SYSTEM FULL RESET INITIATED ---");
+    addLog("--- ALL DATA ERASED ---");
+    
+    recalculateMultipliers();
+    updateVisibility();
+    updateLPS();
+    saveGame();
+}
+
+void Game::recalculateMultipliers() {
+    this->cachedBuildingMultipliers.assign(this->buildings.size(), 1.0);
+    this->cachedGlobalMultiplier = 1.0;
+
+    for (const auto& u : this->upgrades) {
+        if (u.purchased) {
+            // Apply building-specific buffs
+            for (const auto& buff : u.resultantBuffs) {
+                // Find building index by its ID
+                for (size_t i = 0; i < this->buildings.size(); i++) {
+                    if (this->buildings[i].id == buff.first) {
+                        this->cachedBuildingMultipliers[i] *= buff.second;
+                    }
+                }
+            }
+            // Apply global multiplier
+            this->cachedGlobalMultiplier *= u.globalMultiplier;
+        }
+    }
 }
 
 void Game::updateVisibility() {
@@ -70,28 +121,9 @@ double Game::getBuildingProduction(int index) const {
     if (index < 0 || index >= (int)this->buildings.size()) return 0.0;
     
     const auto& b = this->buildings[index];
-    double buildingMultiplier = 1.0;
+    double mult = this->cachedBuildingMultipliers[index];
     
-    // Apply multipliers from purchased upgrades for this specific building
-    for (const auto& u : this->upgrades) {
-        if (u.purchased) {
-            auto it = u.resultantBuffs.find(b.id);
-            if (it != u.resultantBuffs.end()) {
-                buildingMultiplier *= it->second;
-            }
-        }
-    }
-
-    // Apply global multipliers from purchased upgrades
-    double totalGlobalMultiplier = 1.0;
-    for (const auto& u : this->upgrades) {
-        if (u.purchased) {
-            totalGlobalMultiplier *= u.globalMultiplier;
-        }
-    }
-
-    // Include the 'buffs' (overclocking) global multiplier
-    return b.baselps * buildingMultiplier * totalGlobalMultiplier * this->buffs;
+    return b.baselps * mult * this->cachedGlobalMultiplier * this->buffs;
 }
 
 void Game::loadBuildings() {
@@ -164,32 +196,12 @@ void Game::loadUpgrades() {
 void Game::updateLPS() {
     double newlps = 0;
     
-    // Calculate LPS for each building
-    for (const auto& b : this->buildings) {
-        double buildingMultiplier = 1.0;
-        
-        // Apply multipliers from purchased upgrades for specific buildings
-        for (const auto& u : this->upgrades) {
-            if (u.purchased) {
-                auto it = u.resultantBuffs.find(b.id);
-                if (it != u.resultantBuffs.end()) {
-                    buildingMultiplier *= it->second;
-                }
-            }
-        }
-        
-        newlps += (b.baselps * buildingMultiplier) * b.count;
+    // Calculate total LPS for each building
+    for (size_t i = 0; i < this->buildings.size(); i++) {
+        newlps += (this->buildings[i].baselps * this->cachedBuildingMultipliers[i]) * this->buildings[i].count;
     }
 
-    // Apply global multipliers from purchased upgrades
-    double totalGlobalMultiplier = 1.0;
-    for (const auto& u : this->upgrades) {
-        if (u.purchased) {
-            totalGlobalMultiplier *= u.globalMultiplier;
-        }
-    }
-
-    this->linesPerSecond = newlps * totalGlobalMultiplier;
+    this->linesPerSecond = newlps * this->cachedGlobalMultiplier;
 }
 
 void Game::buyBuilding(int index) {
@@ -231,6 +243,7 @@ void Game::buyUpgrade(int actualIndex) {
     this->lines -= u.cost;
     u.purchased = true;
     addLog("SOFTWARE: Installed [" + u.name + "]");
+    recalculateMultipliers();
     updateLPS();
 }
 
@@ -285,6 +298,24 @@ void Game::updateTimers(double dt) {
     this->lastdeltat = dt;
     if (this->feedbackTimer > 0) this->feedbackTimer -= dt;
     if (this->autosaveFeedbackTimer > 0) this->autosaveFeedbackTimer -= dt;
+
+    if (this->isResetting) {
+        this->lastResetKeyPressTime += dt;
+        if (this->lastResetKeyPressTime > 0.15) { // No 'r' key for 150ms
+            this->isResetting = false;
+            this->resetTimer = 0;
+        } else {
+            this->resetTimer += dt;
+            if (this->resetTimer >= 5.0) {
+                hardReset();
+                this->resetTimer = 0;
+                this->isResetting = false;
+            }
+        }
+    } else {
+        this->resetTimer = 0;
+        this->lastResetKeyPressTime = 0;
+    }
 
     this->autosaveTimer += dt;
     if (this->autosaveTimer >= AUTOSAVE_INTERVAL) {
@@ -417,6 +448,7 @@ void Game::loadGame() {
         }
 
         addLog("SYSTEM: State recovered. Ver " + std::to_string(savedver));
+        recalculateMultipliers();
         updateVisibility();
         updateLPS();
     } catch (const std::exception& e) {

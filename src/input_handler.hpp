@@ -15,6 +15,7 @@ enum class GameAction {
     MOVE_DOWN,
     BUY_SELECTED,
     CYCLE_SHOP,
+    RESET_PRESS,
     NONE
 };
 
