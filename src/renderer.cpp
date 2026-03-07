@@ -381,9 +381,9 @@ void Renderer::drawUpgrades(const Game& game, WINDOW* win, int winHeight, int wi
         if (u.purchased) wattron(win, COLOR_PAIR(1));
 
         if (isSelected) {
-            mvwprintw(win, y_pos, 2, "[[ %s ]] %s", u.name.c_str(), u.purchased ? "[INSTALLED]" : "");
+            mvwprintw(win, y_pos, 2, "[%d] [[ %s ]] %s", i, u.name.c_str(), u.purchased ? "[INSTALLED]" : "");
         } else {
-            mvwprintw(win, y_pos, 2, "   %s    %s", u.name.c_str(), u.purchased ? "[INSTALLED]" : "");
+            mvwprintw(win, y_pos, 2, "[%d]    %s    %s", i, u.name.c_str(), u.purchased ? "[INSTALLED]" : "");
         }
         
         if (u.purchased) wattroff(win, COLOR_PAIR(1));
