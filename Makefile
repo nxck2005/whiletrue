@@ -39,6 +39,14 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 run: all
 	./$(TARGET)
 
+# Add a new software upgrade to the data/upgrades.json
+upgrade:
+	python3 tools/add_upgrade.py
+
+# View all software upgrades
+list-upgrades:
+	python3 tools/view_upgrades.py
+
 # Install the game
 install: all
 	mkdir -p $(DESTDIR)$(BINDIR)
