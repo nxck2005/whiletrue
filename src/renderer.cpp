@@ -320,11 +320,11 @@ void Renderer::drawBuildings(const Game& game, WINDOW* win, int winHeight, int w
             mvwprintw(win, y_pos, 2, "[%d] [[ %-10s ]] (Owned: %d)", 
                      game.buildings[i].id, game.buildings[i].name.c_str(), game.buildings[i].count);
         } else {
-            mvwprintw(win, y_pos, 2, "[%d]    %-10s    (Owned: %d)", 
-                     game.buildings[i].id, game.buildings[i].name.c_str(), game.buildings[i].count);
+            mvwprintw(win, y_pos, 2, "[%d]    %-10s    (Owned: %d)",
+                      game.buildings[i].id, game.buildings[i].name.c_str(), game.buildings[i].count);
         }
 
-        mvwprintw(win, y_pos + 1, 6, "+%s D/s  |", Utils::formatNumber(game.buildings[i].baselps).c_str());
+        mvwprintw(win, y_pos + 1, 6, "+%s D/s  |", Utils::formatNumber(game.getBuildingProduction(i)).c_str());
 
         double cost = game.buildings[i].getNextCost();
         if (game.lines >= cost) {

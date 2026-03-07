@@ -66,6 +66,34 @@ int Game::getVisibleUpgradesCount() const {
     return (int)this->visibleUpgradeIndices.size();
 }
 
+double Game::getBuildingProduction(int index) const {
+    if (index < 0 || index >= (int)this->buildings.size()) return 0.0;
+    
+    const auto& b = this->buildings[index];
+    double buildingMultiplier = 1.0;
+    
+    // Apply multipliers from purchased upgrades for this specific building
+    for (const auto& u : this->upgrades) {
+        if (u.purchased) {
+            auto it = u.resultantBuffs.find(b.id);
+            if (it != u.resultantBuffs.end()) {
+                buildingMultiplier *= it->second;
+            }
+        }
+    }
+
+    // Apply global multipliers from purchased upgrades
+    double totalGlobalMultiplier = 1.0;
+    for (const auto& u : this->upgrades) {
+        if (u.purchased) {
+            totalGlobalMultiplier *= u.globalMultiplier;
+        }
+    }
+
+    // Include the 'buffs' (overclocking) global multiplier
+    return b.baselps * buildingMultiplier * totalGlobalMultiplier * this->buffs;
+}
+
 void Game::loadBuildings() {
     std::string path = Utils::getDataPath("buildings.json");
     std::ifstream f(path);

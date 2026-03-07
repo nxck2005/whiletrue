@@ -1,3 +1,8 @@
 version 2:
 
+- added softwares, and shop tabs
+    -- press tab to switch tabs
+    -- unlock softwares by buying a certain number of each building
+    -- buy and install softwares to buff production from quickhacks and get global multipliers
+- quickhacks list now reflects data/sec after applying all bought multipliers
 - added id's to quickhacks

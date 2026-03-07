@@ -49,6 +49,7 @@ public:
     void buyBuilding(int index);
     void buyUpgrade(int index);
     void cycleShop();
+    double getBuildingProduction(int index) const;
     int getVisibleUpgradesCount() const;
     double getBuffCost() const;
     double getClickShareCost() const;
