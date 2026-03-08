@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 #include "utils.hpp"
+#include "constants.hpp"
 #include <json.hpp>
 #include <fstream>
 #include <clocale>
@@ -17,6 +18,7 @@ Renderer::Renderer() {
     init_pair(1, COLOR_GREEN, -1);
     init_pair(2, COLOR_RED, -1);
     init_pair(3, COLOR_CYAN, -1);
+    init_pair(4, COLOR_WHITE, -1);
     cbreak();
     noecho();
     curs_set(0);
@@ -96,11 +98,62 @@ int Renderer::getSelectedUpgradeIndex(const Game& game) const {
 
 void Renderer::drawSplashScreen() {
     bool waiting = true;
-    nodelay(stdscr, FALSE);
+    nodelay(stdscr, TRUE);
+    timeout(SPLASH_TIMEOUT);
+
+    struct Droplet {
+        int x;
+        float y;
+        float speed;
+        int length;
+    };
+
+    std::vector<Droplet> droplets;
+    getmaxyx(stdscr, maxY, maxX);
+    
+    auto initDroplet = [&](Droplet& d, bool startAtTop) {
+        d.x = std::rand() % maxX;
+        d.y = startAtTop ? -(float)(std::rand() % 20) : (float)(std::rand() % maxY);
+        d.speed = SPLASH_BASE_SPEED + (float)(std::rand() % SPLASH_SPEED_VARIANCE) / 1000.0f;
+        d.length = SPLASH_BASE_LENGTH + std::rand() % SPLASH_LENGTH_VARIANCE;
+    };
+
+    int dropletCount = maxX / SPLASH_DROPLET_DENSITY;
+    for (int i = 0; i < dropletCount; ++i) {
+        Droplet d;
+        initDroplet(d, false);
+        droplets.push_back(d);
+    }
     
     while (waiting) {
         erase();
         getmaxyx(stdscr, maxY, maxX);
+
+        // Maintain droplet count on resize
+        if ((int)droplets.size() < maxX / SPLASH_DROPLET_DENSITY) {
+            for (int i = droplets.size(); i < maxX / SPLASH_DROPLET_DENSITY; ++i) {
+                Droplet d;
+                initDroplet(d, true);
+                droplets.push_back(d);
+            }
+        }
+
+        // Draw Matrix Effect (Background)
+        attron(COLOR_PAIR(1) | A_DIM);
+        for (auto& d : droplets) {
+            d.y += d.speed;
+            if (d.y - d.length > maxY) {
+                initDroplet(d, true);
+            }
+
+            for (int i = 0; i < d.length; ++i) {
+                int py = (int)d.y - i;
+                if (py >= 0 && py < maxY && d.x < maxX) {
+                    mvaddch(py, d.x, 33 + (std::rand() % 94));
+                }
+            }
+        }
+        attroff(COLOR_PAIR(4) | A_DIM);
         
         int bannerHeight = splashBanner.size();
         int maxWidth = 0;
@@ -127,15 +180,17 @@ void Renderer::drawSplashScreen() {
         refresh();
 
         int ch = getch();
-        if (ch != KEY_RESIZE) {
-            waiting = false;
-        } else {
-            // Re-initialize windows or state if needed on resize during splash
-            handleResize();
+        if (ch != ERR) {
+            if (ch == KEY_RESIZE) {
+                handleResize();
+            } else {
+                waiting = false;
+            }
         }
     }
     
     nodelay(stdscr, TRUE);
+    timeout(0); // Ensure the game loop is non-blocking after the splash screen
 }
 
 Renderer::~Renderer() {

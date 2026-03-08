@@ -18,3 +18,11 @@ const double CACHE_BUFF_PERCENT = 777.0;
 const int VERSION = 2;
 const std::string SAVE_FILE_NAME = "save_data.json";
 const int EYE_CANDY_LOG_SIZE = 6;
+
+// --  Splash Screen Constants -- //
+const int SPLASH_DROPLET_DENSITY = 6;     // maxX / DENSITY
+const float SPLASH_BASE_SPEED = 0.8f;
+const int SPLASH_SPEED_VARIANCE = 50;      // variance / 1000.0f
+const int SPLASH_BASE_LENGTH = 3;
+const int SPLASH_LENGTH_VARIANCE = 3;
+const int SPLASH_TIMEOUT = 75;             // ms between frames
