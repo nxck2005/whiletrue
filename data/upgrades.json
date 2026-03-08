@@ -40,8 +40,10 @@
     "name": "Mainframe Patch",
     "desc": "Global optimization patch. (1.2x DATA/SEC)",
     "cost": 10000,
-    "alwaysVisible": true,
-    "neededCountsBuildings": {},
+    "alwaysVisible": false,
+    "neededCountsBuildings": {
+      "0": 50, "1": 50
+    },
     "globalMultiplier": 1.2
   }
 ]
