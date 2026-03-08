@@ -2,7 +2,7 @@
   {
     "id": 0,
     "name": "Legacy Driver",
-    "desc": "Legacy drivers for old hardware. (1.1x Pings, +1% DATA/SEC share)",
+    "desc": "For old hardware. (1.1x Pings, +1% DATA/SEC share)",
     "cost": 50,
     "alwaysVisible": true,
     "neededCountsBuildings": {},
@@ -54,8 +54,34 @@
     "cost": 25000,
     "alwaysVisible": false,
     "neededCountsBuildings": {
-      "0": 100
+      "2": 50
     },
     "cpsBoost": 0.05
+  },
+  {
+    "id": 6,
+    "name": "S.O.U.P I",
+    "desc": "Multiply gain by Ping by 1000.",
+    "cost": 10000000,
+    "alwaysVisible": false,
+    "neededCountsBuildings": {
+      "0": 100
+    },
+    "resultantBuffs": {"0": 1000.0}
+  },
+  {
+    "id": 7,
+    "name": "Arasaka Counter-ICE",
+    "desc": "Make neural links 1000x effective.",
+    "cost": 100000000.0,
+    "alwaysVisible": false,
+    "neededCountsBuildings": {
+      "1": 100
+    },
+    "resultantBuffs": {
+      "1": 1000.0
+    },
+    "globalMultiplier": 1.0,
+    "cpsBoost": 0.0
   }
 ]
