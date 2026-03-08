@@ -2,11 +2,12 @@
   {
     "id": 0,
     "name": "Legacy Driver",
-    "desc": "Legacy drivers for old hardware. (1.1x DATA/SEC)",
+    "desc": "Legacy drivers for old hardware. (1.1x Pings, +1% DATA/SEC share)",
     "cost": 50,
     "alwaysVisible": true,
     "neededCountsBuildings": {},
-    "resultantBuffs": { "0": 1.1 }
+    "resultantBuffs": { "0": 1.1 },
+    "cpsBoost": 0.01
   },
   {
     "id": 1,
@@ -45,5 +46,16 @@
       "0": 50, "1": 50
     },
     "globalMultiplier": 1.2
+  },
+  {
+    "id": 5,
+    "name": "Buffer Overflow Exploit",
+    "desc": "Inject malicious data on click. (+5% LPS to click)",
+    "cost": 25000,
+    "alwaysVisible": false,
+    "neededCountsBuildings": {
+      "0": 100
+    },
+    "cpsBoost": 0.05
   }
 ]

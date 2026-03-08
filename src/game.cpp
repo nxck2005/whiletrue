@@ -13,7 +13,7 @@ Game::Game(double lps, double b)
       resetTimer(0), isResetting(false), lastResetKeyPressTime(0),
       autosaveTimer(0), autosaveFeedbackTimer(0), buffsBought(0), clickSharesBought(0),
       cacheActiveTimer(0), cacheBuffDurationTimer(0), cacheOnScreen(false), activeAlert(""),
-      cachedGlobalMultiplier(1.0), selectedShop(Shop::BUILDINGS) {
+      cachedGlobalMultiplier(1.0), cachedCPSBoost(0.0), selectedShop(Shop::BUILDINGS) {
     
     loadBuildings();
     loadUpgrades();
@@ -53,6 +53,7 @@ void Game::hardReset() {
 void Game::recalculateMultipliers() {
     this->cachedBuildingMultipliers.assign(this->buildings.size(), 1.0);
     this->cachedGlobalMultiplier = 1.0;
+    this->cachedCPSBoost = 0.0;
 
     for (const auto& u : this->upgrades) {
         if (u.purchased) {
@@ -67,6 +68,9 @@ void Game::recalculateMultipliers() {
             }
             // Apply global multiplier
             this->cachedGlobalMultiplier *= u.globalMultiplier;
+
+            // Apply flat CPS boost
+            this->cachedCPSBoost += u.cpsBoost;
         }
     }
 }
@@ -172,6 +176,7 @@ void Game::loadUpgrades() {
                 u.alwaysVisible = item.value("alwaysVisible", false);
                 u.visible = u.alwaysVisible;
                 u.globalMultiplier = item.value("globalMultiplier", 1.0);
+                u.cpsBoost = item.value("cpsBoost", 0.0);
 
                 if (item.contains("neededCountsBuildings")) {
                     for (auto& el : item["neededCountsBuildings"].items()) {
@@ -282,7 +287,7 @@ void Game::runCycle(double deltat) {
 
 void Game::registerClick() {
     double lps = this->linesPerSecond * this->buffs;
-    double lpsContribution = lps * this->lpsToClick;
+    double lpsContribution = lps * (this->lpsToClick + this->cachedCPSBoost);
     double linesToAdd = (this->baseClickAmt + lpsContribution) * this->clickBoostPercent;
     this->lines += linesToAdd;
     this->lastClickValue = linesToAdd;

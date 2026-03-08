@@ -59,6 +59,7 @@ def main():
             print(f"Cost:        {target['cost']:,} DATA")
             print(f"Always Vis:  {target.get('alwaysVisible', False)}")
             print(f"Global Mult: {target.get('globalMultiplier', 1.0)}x")
+            print(f"CPS Boost:   {target.get('cpsBoost', 0.0)*100:.1f}% of LPS to click")
             
             print("\nRequirements:")
             reqs = target.get('neededCountsBuildings', {})

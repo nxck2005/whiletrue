@@ -42,6 +42,7 @@ def main():
     cost = float(input(f"Cost (DATA): ") or 0.0)
     always_visible = input("Always Visible? (y/n, default n): ").lower() == 'y'
     global_mult = float(input("Global Multiplier (e.g. 1.2 for +20%, default 1.0): ") or 1.0)
+    cps_boost = float(input("CPS Boost (% of LPS to click, e.g. 0.05 for 5%, default 0.0): ") or 0.0)
 
     # Requirements
     needed_counts = {}
@@ -93,7 +94,8 @@ def main():
         "alwaysVisible": always_visible,
         "neededCountsBuildings": needed_counts,
         "resultantBuffs": resultant_buffs,
-        "globalMultiplier": global_mult
+        "globalMultiplier": global_mult,
+        "cpsBoost": cps_boost
     }
 
     print("\n--- PREVIEW ---")

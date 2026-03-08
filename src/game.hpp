@@ -44,6 +44,9 @@ public:
     // Global Multiplier Cache: Stores the product of all purchased global software buffs.
     double cachedGlobalMultiplier;                  
     
+    // LPS-to-Click % Boost: Extra percentage of LPS added to clicks from software.
+    double cachedCPSBoost;                          
+    
     int numBuildings;
     Shop selectedShop;
 

@@ -303,15 +303,21 @@ void Renderer::drawStats(const Game& game) {
         wattroff(win, COLOR_PAIR(1) | A_BOLD);
     }
 
-    mvwprintw(win, 9, 2, "[B] Overclock Multiplier: x%.2f", game.buffs);
+    mvwprintw(win, 9, 2, "[B] Overclock Multiplier: x%.2f (x%.1f from software)", game.buffs * game.cachedGlobalMultiplier, game.cachedGlobalMultiplier);
     if (game.lines >= game.getBuffCost()) wattron(win, COLOR_PAIR(1)); else wattron(win, COLOR_PAIR(2));
     mvwprintw(win, 10, 6, "Cost: %s DATA", Utils::formatNumber(game.getBuffCost()).c_str());
     wattroff(win, COLOR_PAIR(1)); wattroff(win, COLOR_PAIR(2));
 
-    mvwprintw(win, 12, 2, "[C] Breach DATA/SEC share: %.0f%%", game.lpsToClick * 100);
-    if (game.lines >= game.getClickShareCost()) wattron(win, COLOR_PAIR(1)); else wattron(win, COLOR_PAIR(2));
-    mvwprintw(win, 13, 6, "Cost: %s DATA", Utils::formatNumber(game.getClickShareCost()).c_str());
-    wattroff(win, COLOR_PAIR(1)); wattroff(win, COLOR_PAIR(2));
+    mvwprintw(win, 12, 2, "[C] Breach DATA/SEC share: %.1f%% (%.1f%% from software)", (game.lpsToClick + game.cachedCPSBoost) * 100, game.cachedCPSBoost * 100);
+    if (game.clickBoostPercent > 1.0) {
+        wattron(win, COLOR_PAIR(1));
+        mvwprintw(win, 13, 2, "    ANOMALY ACTIVE: x%.0f click power!", game.clickBoostPercent);
+        wattroff(win, COLOR_PAIR(1));
+    } else {
+        if (game.lines >= game.getClickShareCost()) wattron(win, COLOR_PAIR(1)); else wattron(win, COLOR_PAIR(2));
+        mvwprintw(win, 13, 6, "Cost: %s DATA", Utils::formatNumber(game.getClickShareCost()).c_str());
+        wattroff(win, COLOR_PAIR(1)); wattroff(win, COLOR_PAIR(2));
+    }
 
     // Data Stream Log
     int startLine = 15;

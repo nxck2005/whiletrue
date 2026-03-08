@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <array>
 
 struct Upgrade {
     int id;
@@ -12,6 +13,7 @@ struct Upgrade {
     bool visible = false;
     bool alwaysVisible = false;
     double globalMultiplier = 1.0;
+    double cpsBoost = 0.0;
 
     // Building ID -> Required Count
     std::unordered_map<int, int> neededCountsBuildings;
