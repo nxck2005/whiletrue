@@ -101,7 +101,12 @@ void Game::updateVisibility() {
 
     this->visibleUpgradeIndices.clear();
     for (int i = 0; i < (int)this->upgrades.size(); i++) {
-        if (this->upgrades[i].visible) {
+        if (this->upgrades[i].visible && !this->upgrades[i].purchased) {
+            this->visibleUpgradeIndices.push_back(i);
+        }
+    }
+    for (int i = 0; i < (int)this->upgrades.size(); i++) {
+        if (this->upgrades[i].visible && this->upgrades[i].purchased) {
             this->visibleUpgradeIndices.push_back(i);
         }
     }
@@ -249,6 +254,7 @@ void Game::buyUpgrade(int actualIndex) {
     u.purchased = true;
     addLog("SOFTWARE: Installed [" + u.name + "]");
     recalculateMultipliers();
+    updateVisibility();
     updateLPS();
 }
 

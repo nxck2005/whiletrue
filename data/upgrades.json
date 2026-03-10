@@ -6,7 +6,9 @@
     "cost": 50,
     "alwaysVisible": true,
     "neededCountsBuildings": {},
-    "resultantBuffs": { "0": 1.1 },
+    "resultantBuffs": {
+      "0": 1.1
+    },
     "cpsBoost": 0.01
   },
   {
@@ -15,8 +17,12 @@
     "desc": "Improves Ping response by x2. Needs 5 Pings.",
     "cost": 200,
     "alwaysVisible": false,
-    "neededCountsBuildings": { "0": 5 },
-    "resultantBuffs": { "0": 2.0 }
+    "neededCountsBuildings": {
+      "0": 5
+    },
+    "resultantBuffs": {
+      "0": 2.0
+    }
   },
   {
     "id": 2,
@@ -24,8 +30,12 @@
     "desc": "Boosts Neural Link efficiency. x2 Link output.",
     "cost": 1500,
     "alwaysVisible": false,
-    "neededCountsBuildings": { "1": 15 },
-    "resultantBuffs": { "1": 2.0 }
+    "neededCountsBuildings": {
+      "1": 15
+    },
+    "resultantBuffs": {
+      "1": 2.0
+    }
   },
   {
     "id": 3,
@@ -33,8 +43,14 @@
     "desc": "Synergy between Pings and Links. x1.5 output for both.",
     "cost": 5000,
     "alwaysVisible": false,
-    "neededCountsBuildings": { "0": 25, "1": 25 },
-    "resultantBuffs": { "0": 1.5, "1": 1.5 }
+    "neededCountsBuildings": {
+      "0": 25,
+      "1": 25
+    },
+    "resultantBuffs": {
+      "0": 1.5,
+      "1": 1.5
+    }
   },
   {
     "id": 4,
@@ -43,7 +59,8 @@
     "cost": 10000,
     "alwaysVisible": false,
     "neededCountsBuildings": {
-      "0": 50, "1": 50
+      "0": 50,
+      "1": 50
     },
     "globalMultiplier": 1.2
   },
@@ -67,7 +84,9 @@
     "neededCountsBuildings": {
       "0": 100
     },
-    "resultantBuffs": {"0": 1000.0}
+    "resultantBuffs": {
+      "0": 1000.0
+    }
   },
   {
     "id": 7,
